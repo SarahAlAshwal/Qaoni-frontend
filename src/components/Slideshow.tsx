@@ -50,7 +50,7 @@ export default function Slideshow({
       {...handlers}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
-      className="relative w-full overflow-hidden aspect-[3/1] bg-gray-100 rounded-2xl shadow-lg mt-15"
+      className="relative w-full overflow-hidden aspect-[3/1] bg-gray-100 rounded-2xl shadow-lg mt-15 min-h-[150px]"
     >
       {slides.map((slide, i) => (
         <a

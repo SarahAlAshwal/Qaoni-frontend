@@ -10,7 +10,7 @@ const Footer: FC = () => {
         {/* Logo & description */}
         <div>
           <div className="flex items-center space-x-2 mb-4">
-            <img src="/logo-transparent-white.png" alt="V-Mall Logo" className="h-10 w-auto" />
+            <img src="/logo-transparent-white.png" alt="V-Mall Logo" className="h-auto w-50" />
           </div>
           <p className="text-gray-300 text-sm">
             Your trusted marketplace to connect with local shops and businesses.
