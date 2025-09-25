@@ -1,9 +1,11 @@
 // src/components/Header.tsx
 import { type FC, useState } from "react";
+import { useAuth } from "../../hooks/useAuth";
 import { Link } from "react-router-dom";
 
 const Header: FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+ const { user, isAuthenticated, isAdmin, isShopOwner, login, logout } = useAuth();
 
   return (
     <header className="w-full shadow-md bg-white">
@@ -19,16 +21,42 @@ const Header: FC = () => {
           <Link to="/shops" className="hover:text-red-600">Shops</Link>
           <Link to="/categories" className="hover:text-red-600">Categories</Link>
           <Link to="/about" className="hover:text-red-600">About</Link>
+           {isAuthenticated && (
+              <>
+                {isShopOwner() && (
+                  <Link to="/shops/my-shop" className="hover:text-blue-200">
+                    My Shop
+                  </Link>
+                )}
+                {isAdmin() && (
+                  <Link to="/dashboard" className="hover:text-blue-200">
+                    Dashboard
+                  </Link>
+                )}
+              </>
+            )}
         </nav>
 
         {/* Login button (desktop only) */}
         <div className="hidden md:block">
-          <Link
-            to="/login"
-            className="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition"
-          >
-            Login
-          </Link>
+          {!isAuthenticated ? (
+            <button
+              onClick={() => login()}
+              className="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition"
+            >
+              Login
+            </button>
+          ) : (
+            <div className="flex items-center space-x-3">
+              <span className="text-gray-700">{user?.name}</span>
+              <button
+                onClick={() => logout()}
+                className="bg-gray-600 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-700 transition"
+              >
+                Logout
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Hamburger button (mobile only) */}
@@ -61,13 +89,26 @@ const Header: FC = () => {
             <Link to="/about" className="hover:text-red-600" onClick={() => setIsOpen(false)}>About</Link>
 
             {/* Login button (mobile) */}
-            <Link
-              to="/login"
-              onClick={() => setIsOpen(false)}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition text-center"
-            >
-              Login
-            </Link>
+           <div>
+             {!isAuthenticated ? (
+                <button
+                    onClick={() => login()}
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg shadow hover:bg-red-700 transition"
+                >
+                    Login
+                </button>
+            ) : (
+            <div className="flex items-center space-x-3">
+              <span className="text-gray-700">{user?.name}</span>
+              <button
+                onClick={() => logout()}
+                className="bg-gray-600 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-700 transition"
+              >
+                Logout
+              </button>
+            </div>
+          )}
+           </div>
           </nav>
         </div>
       )}

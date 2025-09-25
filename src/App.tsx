@@ -3,11 +3,10 @@ import './App.css';
 import Header from './components/Layouts/Header';
 import Footer from './components/Layouts/Footer';
 import HomePage from "./components/Pages/HomePage";
-import ProtectedRoute from "./assets/ProtectedRoutes";
-import { useAppSelector } from "./store/hooks";
+import ProtectedRoute from "./ProtectedRoutes";
 
 function App() {
-  const isAuthenticated = useAppSelector((state) => state.userInfo.isAuthenticated);
+
   return (
       <div className="flex flex-col min-h-screen">
       <Header />
@@ -20,7 +19,16 @@ function App() {
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <ProtectedRoute  requiredRole="admin">
+                {/* <DashboardPage /> */}
+                <h1>Dashboard</h1>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/myShop"
+            element={
+              <ProtectedRoute  requiredRole="shop_owner">
                 {/* <DashboardPage /> */}
                 <h1>Dashboard</h1>
               </ProtectedRoute>
