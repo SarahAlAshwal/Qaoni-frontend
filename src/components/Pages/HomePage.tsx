@@ -60,127 +60,127 @@ const HomePage: FC = () => {
     link: '/',
   },
    {
-    id: 'shop-01',
+    id: 'shop-09',
     name: 'First Shop',
     logo: shop1, // image url
     link: '/',
   },
-  { id: 'shop-02',
+  { id: 'shop-10',
     name: 'Second Shop',
     logo: shop2, // image url
     link: '/',
   },
-  { id: 'shop-03',
+  { id: 'shop-11',
     name: 'Third Shop',
     logo: shop3, // image url
     link: '/',
   },
-  { id: 'shop-04',
+  { id: 'shop-12',
     name: 'Fourth Shop',
     logo: shop4, // image url
     link: '/',
   },
-  { id: 'shop-05',
+  { id: 'shop-13',
     name: 'Fifth Shop',
     logo: shop5, // image url
     link: '/',
   },
   {
-    id: 'shop-06',
+    id: 'shop-14',
     name: 'Sixth Shop',
     logo: shop1, // image url
     link: '/',
   },
-  { id: 'shop-07',
+  { id: 'shop-15',
     name: 'Seventh Shop',
     logo: shop2, // image url
     link: '/',
   },
-  { id: 'shop-08',
+  { id: 'shop-16',
     name: 'Eighth Shop',
     logo: shop3, // image url
     link: '/',
   },
    {
-    id: 'shop-01',
+    id: 'shop-17',
     name: 'First Shop',
     logo: shop1, // image url
     link: '/',
   },
-  { id: 'shop-02',
+  { id: 'shop-18',
     name: 'Second Shop',
     logo: shop2, // image url
     link: '/',
   },
-  { id: 'shop-03',
+  { id: 'shop-19',
     name: 'Third Shop',
     logo: shop3, // image url
     link: '/',
   },
-  { id: 'shop-04',
+  { id: 'shop-20',
     name: 'Fourth Shop',
     logo: shop4, // image url
     link: '/',
   },
-  { id: 'shop-05',
+  { id: 'shop-21',
     name: 'Fifth Shop',
     logo: shop5, // image url
     link: '/',
   },
   {
-    id: 'shop-06',
+    id: 'shop-22',
     name: 'Sixth Shop',
     logo: shop1, // image url
     link: '/',
   },
-  { id: 'shop-07',
+  { id: 'shop-23',
     name: 'Seventh Shop',
     logo: shop2, // image url
     link: '/',
   },
-  { id: 'shop-08',
+  { id: 'shop-24',
     name: 'Eighth Shop',
     logo: shop3, // image url
     link: '/',
   },
    {
-    id: 'shop-01',
+    id: 'shop-25',
     name: 'First Shop',
     logo: shop1, // image url
     link: '/',
   },
-  { id: 'shop-02',
+  { id: 'shop-26',
     name: 'Second Shop',
     logo: shop2, // image url
     link: '/',
   },
-  { id: 'shop-03',
+  { id: 'shop-27',
     name: 'Third Shop',
     logo: shop3, // image url
     link: '/',
   },
-  { id: 'shop-04',
+  { id: 'shop-28',
     name: 'Fourth Shop',
     logo: shop4, // image url
     link: '/',
   },
-  { id: 'shop-05',
+  { id: 'shop-29',
     name: 'Fifth Shop',
     logo: shop5, // image url
     link: '/',
   },
   {
-    id: 'shop-06',
+    id: 'shop-30',
     name: 'Sixth Shop',
     logo: shop1, // image url
     link: '/',
   },
-  { id: 'shop-07',
+  { id: 'shop-31',
     name: 'Seventh Shop',
     logo: shop2, // image url
     link: '/',
   },
-  { id: 'shop-08',
+  { id: 'shop-32',
     name: 'Eighth Shop',
     logo: shop3, // image url
     link: '/',

@@ -28,7 +28,7 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
       <div className="grid grid-cols-1 gap-6 sm:hidden">
         {shops.slice(0, mobileLimit).map((shop) => (
           <div
-            key={shop.id}
+            key={`mobile-${shop.id}`}
             className="rounded-xl overflow-hidden shadow-md bg-gray-100 flex flex-col items-center p-4"
           >
             <img
@@ -61,7 +61,7 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
       <div className="hidden sm:grid md:hidden grid-cols-2 gap-6">
         {shops.slice(0, tabletLimit).map((shop) => (
           <div
-            key={shop.id}
+            key={`tablet-${shop.id}`}
             className="rounded-xl overflow-hidden shadow-md bg-gray-100 flex flex-col items-center p-4"
           >
             <img
@@ -94,7 +94,7 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
       <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         {shops.slice(0, desktopLimit).map((shop) => (
           <div
-            key={shop.id}
+            key={`desktop-${shop.id}`}
             className="relative group rounded-xl overflow-hidden shadow-md"
           >
             <img
