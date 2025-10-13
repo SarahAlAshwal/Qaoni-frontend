@@ -7,10 +7,11 @@ import bookImage from '../../../assets/shop-book.jpeg';
 import techImage from '../../../assets/tech-store-shop.jpg';
 
 const categories: FilterOption[] = [
-  { label: "All", value: "" },
   { label: "Clothing", value: "clothing" },
   { label: "Electronics", value: "electronics" },
   { label: "Books", value: "books" },
+  { label: "Accessories", value: "accessories" },
+  { label: "Bags", value: "bags" },
 ];
 
 const shops = [
@@ -81,15 +82,14 @@ const shops = [
 
 export default function ShopsPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState<{ categories?: string }>({});
+  const [filters, setFilters] = useState<string>("");
 
   // Filter logic
   const filteredShops = shops.filter((shop) => {
     const matchesSearch = shop.name
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
-    const matchescategories =
-      !filters.categories || shop.categories.includes(filters.categories);
+    const matchescategories = filters === "" || shop.categories.includes(filters);
     return matchesSearch && matchescategories;
   });
 
@@ -100,7 +100,11 @@ export default function ShopsPage() {
         <SearchBar onSearch={setSearchQuery} placeholder="Search shops..." />
         <Filter
           categories={categories}
-          onFilterChange={(f) => setFilters((prev) => ({ ...prev, ...f }))}
+          onFilterChange={(f) => {
+            // Extract the filter value from the object
+            const filterValue = f.category || "";
+            setFilters(filterValue);
+          }}
         />
       </div>
 

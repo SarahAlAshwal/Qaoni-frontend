@@ -5,6 +5,7 @@ import Footer from './components/Layouts/Footer';
 import HomePage from "./components/Pages/HomePage";
 import ProtectedRoute from "./ProtectedRoutes";
 import ShopsPage from "./components/Pages/Shops/Shops";
+import CategoriesPage from "./components/Pages/Categories/CategoriesPage";
 
 function App() {
 
@@ -14,7 +15,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/shops" element={<ShopsPage />} />
-          <Route path="/categories" element={<h2>Categories</h2>} />
+          <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/about" element={<h1>About</h1>} />
           <Route path="/login" element={<h1>Login</h1>} />
           <Route
