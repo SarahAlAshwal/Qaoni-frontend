@@ -4,10 +4,10 @@ import CategoryCard from "./CategoryCard";
 import Filter, { type FilterOption } from "../../Shared/Filter";
 
 const mockCategories = [
-  { id: 1, name: "Clothing", shops: ["Shop A", "Shop B", "Shop C", "Shop D"], type: "Retail" },
-  { id: 2, name: "Restaurants", shops: ["Pizza Place", "Sushi Bar"], type: "Food" },
-  { id: 3, name: "Electronics", shops: ["TechWorld"], type: "Retail" },
-  { id: 4, name: "Beauty & Wellness", shops: ["SpaX"], type: "Services" },
+  { id: '1', name: "Clothing", slug: "clothing", shops: ["Shop A", "Shop B", "Shop C", "Shop D"], type: "Retail" },
+  { id: '2', name: "Restaurants", slug:"restaurants", shops: ["Pizza Place", "Sushi Bar"], type: "Food" },
+  { id: '3', name: "Electronics", slug: "electronics", shops: ["TechWorld"], type: "Retail" },
+  { id: '4', name: "Beauty & Wellness", slug:"beauty-wellness", shops: ["SpaX"], type: "Services" },
 ];
 
 const CategoriesPage = () => {
@@ -45,7 +45,7 @@ const CategoriesPage = () => {
       {/* Categories Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {filteredCategories.map((cat) => (
-          <CategoryCard key={cat.id} name={cat.name} shops={cat.shops} />
+          <CategoryCard key={cat.id} name={cat.name} shops={cat.shops} slug={cat.slug} />
         ))}
         {filteredCategories.length === 0 && (
           <p className="text-gray-500 text-center col-span-full">
