@@ -1,4 +1,3 @@
-// src/components/Shared/ShopCard.tsx
 import { Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 
@@ -16,6 +15,11 @@ export default function ShopCard({ shop }: { shop: Shop }) {
 
   const [showTooltip, setShowTooltip] = useState(false);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
+
+  const slugify = (name: string) => {
+  return name.toLowerCase().replace(/\s+/g, '-');
+}
+
 
   // Close tooltip on outside click OR scroll
 useEffect(() => {
@@ -125,7 +129,7 @@ useEffect(() => {
 
         {/* Hover CTA */}
         <Link
-          to={`/shops/${shop.id}`}
+          to={`/shops/${slugify(shop.name)}`}
           className="mt-4 bg-white text-red-600 font-medium text-sm px-4 py-2 rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition duration-300"
         >
           Visit Shop

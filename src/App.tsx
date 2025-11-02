@@ -7,6 +7,7 @@ import ProtectedRoute from "./ProtectedRoutes";
 import ShopsPage from "./components/Pages/Shops/Shops";
 import CategoriesPage from "./components/Pages/Categories/CategoriesPage";
 import CategoryDetailsPage from "./components/Pages/Categories/CategoryDetailsPage";
+import ShopDetailsPage from "./components/Pages/Shops/ShopDetailsPage";
 
 function App() {
 
@@ -16,6 +17,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/shops" element={<ShopsPage />} />
+          <Route path="/shops/:slug" element={<ShopDetailsPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/categories/:slug" element={<CategoryDetailsPage />} />
           <Route path="/about" element={<h1>About</h1>} />
