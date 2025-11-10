@@ -8,6 +8,7 @@ import ShopsPage from "./components/Pages/Shops/Shops";
 import CategoriesPage from "./components/Pages/Categories/CategoriesPage";
 import CategoryDetailsPage from "./components/Pages/Categories/CategoryDetailsPage";
 import ShopDetailsPage from "./components/Pages/Shops/ShopDetailsPage";
+import ShopEditorPage from "./components/Pages/Shops/ShopsEditor";
 
 function App() {
 
@@ -26,8 +27,7 @@ function App() {
             path="/dashboard"
             element={
               <ProtectedRoute  requiredRole="admin">
-                {/* <DashboardPage /> */}
-                <h1>Dashboard</h1>
+                <ShopEditorPage />
               </ProtectedRoute>
             }
           />

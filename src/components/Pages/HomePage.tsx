@@ -190,7 +190,6 @@ const HomePage: FC = () => {
         <main className="flex-grow">
             <Slideshow slides={slidesImages} />
             <FeaturedShops shops={shops} />
-            {/* Page content here */}
       </main>
     );
 }
