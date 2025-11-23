@@ -1,5 +1,5 @@
 import React, { type FC } from 'react'
-import Slideshow from '../Slideshow';
+import Slideshow from '../Shared/Slideshow';
 import FeaturedShops from '../Layouts/FeaturedShops';
 import offer1 from '../../assets/offer1.jpg';
 import offer2 from '../../assets/offer2.jpg';

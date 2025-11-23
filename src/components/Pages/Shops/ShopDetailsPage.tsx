@@ -4,6 +4,8 @@ import logo from '../../../assets/tech-store-shop.jpg';
 import hero from '../../../assets/tech-hero-image.jpg';
 import phone from '../../../assets/phone.jpeg';
 import smartwatch from '../../../assets/smartwatch.jpeg';
+import facebookIcon from '../../../assets/facebook.svg';
+import instagramIcon from '../../../assets/instagram.svg';
 
 // Mock data for now
 const mockShop = {
@@ -28,7 +30,8 @@ const mockShop = {
     phone: "123-456-7890",
     email: "info@techworld.com",
     address: "123 Innovation Drive, Ottawa, ON",
-    website: "https://techworld.ca",
+    instagram: "https://www.instagram.com/adorit_boutique/?hl=en",
+    facebook: "https://www.facebook.com/FlockBoutique/",
   },
 };
 
@@ -178,34 +181,49 @@ export default function ShopDetailsPage() {
         </div>
       </section>
 
-      {/* Contact Info */}
-      <section className="bg-gray-100 py-10">
-        <div className="container mx-auto px-6 text-center md:text-left">
-          <h2 className="text-2xl font-semibold mb-6 text-gray-800">
-            Contact {shop.name}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-700">
-            <div>
-              <p><strong>Phone:</strong> {shop.contact.phone}</p>
-              <p><strong>Email:</strong> {shop.contact.email}</p>
-              <p><strong>Address:</strong> {shop.contact.address}</p>
-            </div>
-            <div>
-              <p>
-                <strong>Website:</strong>{" "}
-                <a
-                  href={shop.contact.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-red-600 hover:underline"
-                >
-                  {shop.contact.website}
-                </a>
-              </p>
-            </div>
+    {/* Contact Info */}
+    <section className="bg-gray-100 py-10">
+      <div className="container mx-auto px-6 text-center md:text-left">
+        <h2 className="text-2xl font-semibold mb-6 text-gray-800">
+          Contact {shop.name}
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-700">
+          <div>
+            <p><strong>Phone:</strong> {shop.contact.phone}</p>
+            <p><strong>Email:</strong> {shop.contact.email}</p>
+            <p><strong>Address:</strong> {shop.contact.address}</p>
           </div>
+
+        {/* Social Icons */}
+        <div className="flex items-center gap-4 mt-4">
+          {shop.contact?.facebook && (
+            <a
+              href={shop.contact?.facebook}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 text-2xl transition"
+            >
+              <img className="max-w-[20%]" src={facebookIcon} alt="facebook" />
+            </a>
+          )}
+
+          {shop.contact?.instagram && (
+            <a
+              href={shop.contact?.instagram}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-pink-600 hover:text-pink-800 text-2xl transition"
+            >
+               <img className="max-w-[20%]" src={instagramIcon} alt="instagram" />
+            </a>
+          )}
         </div>
-      </section>
+
+        </div>
+      </div>
+    </section>
+
     </div>
   );
 }

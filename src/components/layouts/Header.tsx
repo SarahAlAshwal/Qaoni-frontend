@@ -21,6 +21,7 @@ const Header: FC = () => {
           <Link to="/shops" className="hover:text-red-600">Shops</Link>
           <Link to="/categories" className="hover:text-red-600">Categories</Link>
           <Link to="/about" className="hover:text-red-600">About</Link>
+          <Link to="/my-shop" className="hover:text-red-600">My Shop</Link>
            {isAuthenticated && (
               <>
                 {isShopOwner() && (
@@ -87,6 +88,21 @@ const Header: FC = () => {
             <Link to="/shops" className="hover:text-red-600" onClick={() => setIsOpen(false)}>Shops</Link>
             <Link to="/categories" className="hover:text-red-600" onClick={() => setIsOpen(false)}>Categories</Link>
             <Link to="/about" className="hover:text-red-600" onClick={() => setIsOpen(false)}>About</Link>
+            <Link to="/my-shop" className="hover:text-red-600" onClick={() => setIsOpen(false)}>My Shop</Link>
+            {isAuthenticated && (
+              <>
+                {isShopOwner() && (
+                  <Link to="/shops/my-shop" className="hover:text-blue-200">
+                    My Shop
+                  </Link>
+                )}
+                {isAdmin() && (
+                  <Link to="/dashboard" className="hover:text-blue-200">
+                    Dashboard
+                  </Link>
+                )}
+              </>
+            )}
 
             {/* Login button (mobile) */}
            <div>

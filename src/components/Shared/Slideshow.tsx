@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSwipeable } from "react-swipeable";
-import chevronLeft from "../assets/chevron-left.svg";
-import chevronRight from "../assets/chevron-right.svg";
+import chevronLeft from "../../assets/chevron-left.svg";
+import chevronRight from "../../assets/chevron-right.svg";
 
 export interface Slide {
   image: string;

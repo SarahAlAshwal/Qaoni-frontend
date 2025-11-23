@@ -21,6 +21,7 @@ function App() {
           <Route path="/shops/:slug" element={<ShopDetailsPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/categories/:slug" element={<CategoryDetailsPage />} />
+          <Route path="/my-shop" element={<ShopEditorPage />} />
           <Route path="/about" element={<h1>About</h1>} />
           <Route path="/login" element={<h1>Login</h1>} />
           <Route

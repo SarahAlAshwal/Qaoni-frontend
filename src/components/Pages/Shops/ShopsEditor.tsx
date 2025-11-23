@@ -1,156 +1,308 @@
 // src/components/Pages/ShopOwner/ShopEditorPage.tsx
 import { useState } from "react";
+import ImageUploader from "../../Shared/ImageUploader";
+import ImagePreviewModal from "../../Shared/ImagePreviewModal";
+import ShopPreviewPage from "./ShopPreviewPage";
 
 interface GalleryImage {
   url: string;
   price?: string;
   description?: string;
+  featured?: boolean;
 }
 
 export default function ShopEditorPage() {
   const [shopData, setShopData] = useState({
     name: "",
     description: "",
-    contact: "",
+    location: "",
+    categories: [] as string[],
+    newCategory: "",
+    contact: {
+      phone: "",
+      email: "",
+      address: "",
+      instagram: "",
+      facebook: "",
+    },
   });
-  const [heroImage, setHeroImage] = useState<string | null>(null);
+
+  const defaultCategories = ["Food", "Beauty", "Clothing", "Tech"];
+
+  const [logo, setLogo] = useState<string | null>(null);
+  const [hero, setHero] = useState<string | null>(null);
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
-  const [showPreview, setShowPreview] = useState(false);
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+  const [showPreviewPage, setShowPreviewPage] = useState(false);
 
-  const handleHeroUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) setHeroImage(URL.createObjectURL(file));
+  // Upload handlers
+  const handleLogoUpload = (files: File[]) => {
+    setLogo(URL.createObjectURL(files[0]));
   };
 
-  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      const newImages = Array.from(files).map((file) => ({
-        url: URL.createObjectURL(file),
-        price: "",
-        description: "",
-      }));
-      setGallery((prev) => [...prev, ...newImages]);
-    }
+  const handleHeroUpload = (files: File[]) => {
+    setHero(URL.createObjectURL(files[0]));
   };
 
-  const handleRemoveImage = (url: string) => {
-    setGallery((prev) => prev.filter((img) => img.url !== url));
+  const handleGalleryUpload = (files: File[]) => {
+    const newImages = files.map((file) => ({
+      url: URL.createObjectURL(file),
+      price: "",
+      description: "",
+      featured: false,
+    }));
+
+    setGallery((prev) => [...prev, ...newImages]);
   };
 
-  const updateImageField = (
+  const removeGalleryItem = (index: number) => {
+    setGallery((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const updateGalleryField = (
     index: number,
     field: keyof GalleryImage,
-    value: string
+    value: string | boolean
   ) => {
     const updated = [...gallery];
-    updated[index][field] = value;
+    (updated[index] as any)[field] = value;
     setGallery(updated);
   };
 
+  // Category handling
+  const toggleCategory = (cat: string) => {
+    setShopData((prev) => {
+      const exists = prev.categories.includes(cat);
+      return {
+        ...prev,
+        categories: exists
+          ? prev.categories.filter((c) => c !== cat)
+          : [...prev.categories, cat],
+      };
+    });
+  };
+
+  const addNewCategory = () => {
+    const cat = shopData.newCategory.trim();
+    if (!cat) return;
+
+    setShopData((prev) => ({
+      ...prev,
+      categories: [...prev.categories, cat],
+      newCategory: "",
+    }));
+  };
+
+  const updateContactField = (field: string, value: string) => {
+    setShopData({
+      ...shopData,
+      contact: {
+        ...shopData.contact,
+        [field]: value,
+      },
+    });
+  };
+
+  if (showPreviewPage) {
   return (
-    <div className="max-w-4xl mx-auto p-8 space-y-8">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">
-        Manage Your Shop
-      </h1>
+    <ShopPreviewPage
+      data={shopData}
+      logo={logo}
+      hero={hero}
+      gallery={gallery}
+      onClose={() => setShowPreviewPage(false)}
+    />
+  );
+}
+
+  return (
+    <div className="max-w-4xl mx-auto p-8 space-y-10">
+      <h1 className="text-2xl font-bold">Manage Your Shop</h1>
+
+      {/* LOGO Upload */}
+      <div className="bg-white p-6 rounded-xl shadow-md space-y-3">
+        <h2 className="font-semibold">Logo</h2>
+
+        <ImageUploader label="Upload Logo" onUpload={handleLogoUpload} />
+
+        {logo && (
+          <img
+            src={logo}
+            onClick={() => setPreviewSrc(logo)}
+            className="w-32 rounded-lg mt-3 cursor-pointer"
+          />
+        )}
+      </div>
 
       {/* Shop Info */}
       <div className="bg-white p-6 rounded-xl shadow-md space-y-4">
         <div>
-          <label className="block font-medium mb-1">Shop Name</label>
+          <label className="block font-medium">Shop Name</label>
           <input
             type="text"
+            className="w-full border rounded-lg p-2"
             value={shopData.name}
             onChange={(e) =>
               setShopData({ ...shopData, name: e.target.value })
             }
-            className="w-full border rounded-lg p-2"
           />
         </div>
 
         <div>
-          <label className="block font-medium mb-1">Description</label>
+          <label className="block font-medium">Description</label>
           <textarea
+            rows={3}
+            className="w-full border rounded-lg p-2"
             value={shopData.description}
             onChange={(e) =>
               setShopData({ ...shopData, description: e.target.value })
             }
-            className="w-full border rounded-lg p-2"
-            rows={3}
           />
         </div>
 
+        {/* Location */}
         <div>
-          <label className="block font-medium mb-1">Contact Info</label>
+          <label className="block font-medium">Location</label>
           <input
             type="text"
-            value={shopData.contact}
-            onChange={(e) =>
-              setShopData({ ...shopData, contact: e.target.value })
-            }
             className="w-full border rounded-lg p-2"
+            value={shopData.location}
+            onChange={(e) =>
+              setShopData({ ...shopData, location: e.target.value })
+            }
           />
         </div>
       </div>
 
-      {/* Hero Image */}
+      {/* Categories */}
+      <div className="bg-white p-6 rounded-xl shadow-md space-y-4">
+        <h2 className="font-semibold">Categories</h2>
+
+        <div className="flex flex-wrap gap-3">
+          {defaultCategories.map((cat) => (
+            <label key={cat} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={shopData.categories.includes(cat)}
+                onChange={() => toggleCategory(cat)}
+              />
+              {cat}
+            </label>
+          ))}
+        </div>
+
+        <div className="flex gap-2 mt-2">
+          <input
+            type="text"
+            placeholder="Add new category"
+            className="border p-2 rounded-lg flex-1"
+            value={shopData.newCategory}
+            onChange={(e) =>
+              setShopData({ ...shopData, newCategory: e.target.value })
+            }
+          />
+          <button
+            onClick={addNewCategory}
+            className="px-4 py-2 bg-black text-white rounded-lg"
+          >
+            Add
+          </button>
+        </div>
+      </div>
+
+      {/* Contact */}
+      <div className="bg-white p-6 rounded-xl shadow-md space-y-4">
+        <h2 className="font-semibold">Contact Information</h2>
+
+        {[
+          ["phone", "Phone Number"],
+          ["email", "Email"],
+          ["address", "Address"],
+          ["instagram", "Instagram"],
+          ["facebook", "Facebook"],
+        ].map(([field, label]) => (
+          <div key={field}>
+            <label className="block font-medium">{label}</label>
+            <input
+              type="text"
+              className="w-full border rounded-lg p-2"
+              value={(shopData.contact as any)[field]}
+              onChange={(e) => updateContactField(field, e.target.value)}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Hero */}
       <div className="bg-white p-6 rounded-xl shadow-md">
         <h2 className="font-semibold mb-3">Hero Image</h2>
-        <input type="file" accept="image/*" onChange={handleHeroUpload} />
-        {heroImage && (
+
+        <ImageUploader label="Upload Hero Image" onUpload={handleHeroUpload} />
+
+        {hero && (
           <img
-            src={heroImage}
-            alt="Hero"
-            className="mt-4 rounded-lg w-full object-cover h-60"
+            src={hero}
+            className="w-full h-56 object-cover mt-4 rounded-lg cursor-pointer"
+            onClick={() => setPreviewSrc(hero)}
           />
         )}
       </div>
 
       {/* Gallery */}
       <div className="bg-white p-6 rounded-xl shadow-md">
-        <h2 className="font-semibold mb-3">Gallery</h2>
-        <input type="file" accept="image/*" multiple onChange={handleGalleryUpload} />
+        <h2 className="font-semibold mb-3">Products Gallery</h2>
+
+        <ImageUploader label="Add Images" onUpload={handleGalleryUpload} />
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           {gallery.map((img, i) => (
-            <div
-              key={i}
-              className="relative border rounded-lg p-3 bg-gray-50 shadow-sm"
-            >
+            <div key={i} className="relative border p-3 rounded-lg bg-gray-50">
               <img
                 src={img.url}
-                alt={`Gallery ${i}`}
-                className="rounded-md w-full h-40 object-cover mb-3"
+                className="w-full h-40 object-cover rounded-md cursor-pointer"
+                onClick={() => setPreviewSrc(img.url)}
               />
+
               <button
-                onClick={() => handleRemoveImage(img.url)}
-                className="absolute top-2 right-2 bg-black bg-opacity-60 text-white rounded-full px-2 py-1 text-sm hover:bg-opacity-80"
+                onClick={() => removeGalleryItem(i)}
+                className="absolute top-2 right-2 text-white bg-black/60 p-1 px-2 rounded-full"
               >
                 ✕
               </button>
 
-              <div className="space-y-2">
+              <label className="flex items-center gap-2 mt-2">
+                <input
+                  type="checkbox"
+                  checked={img.featured}
+                  onChange={(e) =>
+                    updateGalleryField(i, "featured", e.target.checked)
+                  }
+                />
+                Featured Product
+              </label>
+
+              <div className="space-y-2 mt-2">
                 <div>
-                  <label className="block text-sm font-medium">Price (optional)</label>
+                  <label className="text-sm">Price</label>
                   <input
                     type="text"
+                    className="w-full border rounded-md p-2"
                     value={img.price}
                     onChange={(e) =>
-                      updateImageField(i, "price", e.target.value)
+                      updateGalleryField(i, "price", e.target.value)
                     }
-                    className="w-full border rounded-md p-2"
-                    placeholder="e.g. $25"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium">Description (optional)</label>
+                  <label className="text-sm">Description</label>
                   <textarea
+                    rows={2}
+                    className="w-full border rounded-md p-2"
                     value={img.description}
                     onChange={(e) =>
-                      updateImageField(i, "description", e.target.value)
+                      updateGalleryField(i, "description", e.target.value)
                     }
-                    className="w-full border rounded-md p-2"
-                    rows={2}
-                    placeholder="Short description..."
                   />
                 </div>
               </div>
@@ -162,75 +314,19 @@ export default function ShopEditorPage() {
       {/* Buttons */}
       <div className="flex justify-between">
         <button
-          onClick={() => setShowPreview(true)}
-          className="px-6 py-2 bg-black hover:bg-gray-600 text-white font-semibold rounded-lg"
+          onClick={() => setShowPreviewPage(true)}
+          className="px-6 py-2 bg-black text-white rounded-lg"
         >
           Preview
         </button>
 
-        <button className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg">
+        <button className="px-6 py-2 bg-red-600 text-white rounded-lg">
           Save Changes
         </button>
       </div>
 
-      {/* Preview Modal */}
-      {showPreview && (
-        <div
-          className="fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center p-4 overflow-y-auto"
-          onClick={() => setShowPreview(false)}
-        >
-          <div
-            className="relative bg-white rounded-xl shadow-2xl w-full max-w-5xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setShowPreview(false)}
-              className="absolute top-4 right-4 text-white bg-black bg-opacity-50 hover:bg-opacity-80 rounded-full p-2 text-xl z-50"
-            >
-              ×
-            </button>
-
-            {heroImage && (
-              <img
-                src={heroImage}
-                alt="Hero Preview"
-                className="w-full h-64 object-cover"
-              />
-            )}
-
-            <div className="p-6">
-              <h2 className="text-2xl font-bold mb-2">{shopData.name}</h2>
-              <p className="text-gray-600 mb-4">{shopData.description}</p>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {gallery.map((img, i) => (
-                  <div key={i} className="rounded-lg overflow-hidden shadow">
-                    <img
-                      src={img.url}
-                      alt={`Preview ${i}`}
-                      className="w-full h-40 object-cover"
-                    />
-                    <div className="p-3">
-                      {img.price && (
-                        <p className="font-semibold text-red-600">{img.price}</p>
-                      )}
-                      {img.description && (
-                        <p className="text-sm text-gray-600">{img.description}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {shopData.contact && (
-                <p className="mt-6 text-sm text-gray-700">
-                  <b>Contact:</b> {shopData.contact}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Image Preview */}
+      <ImagePreviewModal src={previewSrc} onClose={() => setPreviewSrc(null)} />
     </div>
   );
 }
