@@ -1,9 +1,9 @@
 import React, { type FC } from 'react'
 import Slideshow from '../Shared/Slideshow';
 import FeaturedShops from '../Layouts/FeaturedShops';
-import offer1 from '../../assets/offer1.jpg';
-import offer2 from '../../assets/offer2.jpg';
-import offer3 from '../../assets/offer3.jpg';
+import offer2 from '../../assets/special-offer-2-3-1.webp';
+import offer3 from '../../assets/special-offer5-3-1.png';
+import offer1 from '../../assets/special-offer3-3-1.webp';
 import shop1 from '../../assets/shop1.jpeg';
 import shop2 from '../../assets/shop2.jpeg';
 import shop3 from '../../assets/shop3.jpeg';
@@ -14,7 +14,7 @@ const HomePage: FC = () => {
     const slidesImages = [
     { image: offer1, link: '/', alt: 'offer-image' },
     { image: offer2, link: '/', alt: 'offer-image' },
-    { image: offer3, link: '/', alt: 'offer-image' }
+    { image: offer3, link: '/', alt: 'offer-image' },
   ]
   const shops = [
     {
