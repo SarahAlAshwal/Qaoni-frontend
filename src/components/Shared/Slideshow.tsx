@@ -7,8 +7,8 @@ export interface Slide {
   image: string;
   link: string;
   alt: string;
-  title?: string;   // Optional caption title
-  subtitle?: string; // Optional caption text
+  title?: string;
+  subtitle?: string;
 }
 
 interface SlideshowProps {
@@ -25,7 +25,6 @@ export default function Slideshow({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Auto change
   useEffect(() => {
     if (!autoPlay || isPaused) return;
     const timer = setInterval(() => {
@@ -38,7 +37,6 @@ export default function Slideshow({
     setCurrentIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
   const goToNext = () => setCurrentIndex((prev) => (prev + 1) % slides.length);
 
-  // Swipe gestures
   const handlers = useSwipeable({
     onSwipedLeft: goToNext,
     onSwipedRight: goToPrev,
@@ -50,32 +48,35 @@ export default function Slideshow({
       {...handlers}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
-      className="relative w-full overflow-hidden aspect-[3/1] bg-gray-100 rounded-2xl shadow-lg mt-15 min-h-[150px]"
+      className="relative w-full overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl shadow-lg"
+      style={{ maxHeight: '500px', minHeight: '300px', height: '45vh' }}
     >
       {slides.map((slide, i) => (
         <a
           key={i}
           href={slide.link}
-          className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+          className={`absolute inset-0 flex items-center justify-center transition-opacity duration-700 ease-in-out ${
             i === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
           }`}
         >
           <img
             src={slide.image}
             alt={slide.alt}
-            className="w-full h-full object-cover"
+            className="max-w-full max-h-full object-contain p-4 sm:p-8"
           />
 
           {/* Optional overlay caption */}
           {(slide.title || slide.subtitle) && (
-            <div className="absolute bottom-8 left-8 bg-black/50 p-4 rounded-lg text-white max-w-xs">
+            <div className="absolute bottom-6 left-6 right-6 sm:bottom-8 sm:left-8 sm:right-auto bg-gradient-to-r from-black/70 to-black/50 backdrop-blur-sm p-4 sm:p-5 rounded-xl text-white max-w-md shadow-xl">
               {slide.title && (
-                <h2 className="text-lg md:text-2xl font-semibold">
+                <h2 className="text-base sm:text-xl md:text-2xl font-bold mb-1">
                   {slide.title}
                 </h2>
               )}
               {slide.subtitle && (
-                <p className="mt-1 text-sm md:text-base">{slide.subtitle}</p>
+                <p className="text-xs sm:text-sm md:text-base opacity-90">
+                  {slide.subtitle}
+                </p>
               )}
             </div>
           )}
@@ -85,27 +86,32 @@ export default function Slideshow({
       {/* Left Arrow */}
       <button
         onClick={goToPrev}
-        className="absolute top-1/2 left-2 sm:left-4 -translate-y-1/2 bg-black/40 hover:bg-black/60 p-2 sm:p-3 rounded-full z-15"
+        aria-label="Previous slide"
+        className="absolute top-1/2 left-3 sm:left-5 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg hover:shadow-xl p-2 sm:p-3 rounded-full z-20 transition-all duration-200 hover:scale-110"
       >
-        <img src={chevronLeft} alt="Previous" className="w-4 h-4 sm:w-6 sm:h-6" />
+        <img src={chevronLeft} alt="" className="w-5 h-5 sm:w-6 sm:h-6" />
       </button>
 
       {/* Right Arrow */}
       <button
         onClick={goToNext}
-        className="absolute top-1/2 right-2 sm:right-4 -translate-y-1/2 bg-black/40 hover:bg-black/60 p-2 sm:p-3 rounded-full z-15"
+        aria-label="Next slide"
+        className="absolute top-1/2 right-3 sm:right-5 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg hover:shadow-xl p-2 sm:p-3 rounded-full z-20 transition-all duration-200 hover:scale-110"
       >
-        <img src={chevronRight} alt="Next" className="w-4 h-4 sm:w-6 sm:h-6" />
+        <img src={chevronRight} alt="" className="w-5 h-5 sm:w-6 sm:h-6" />
       </button>
 
       {/* Dots */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 hidden sm:flex gap-2 z-15">
+      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2 z-20 bg-black/20 backdrop-blur-sm px-3 py-2 rounded-full">
         {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => setCurrentIndex(i)}
-            className={`w-3 h-3 rounded-full transition-colors ${
-              i === currentIndex ? "bg-white" : "bg-white/50 hover:bg-white"
+            aria-label={`Go to slide ${i + 1}`}
+            className={`transition-all duration-300 rounded-full ${
+              i === currentIndex 
+                ? "bg-white w-8 h-3" 
+                : "bg-white/60 hover:bg-white/80 w-3 h-3"
             }`}
           />
         ))}
