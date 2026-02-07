@@ -1,0 +1,41 @@
+export interface SaveImageOptions {
+  files: File[];
+  entityType: "shop" | "homepage" | "featured-shop";
+  entityId?: string;
+  imageType: "logo" | "hero" | "gallery" | "slide";
+  extraData?: {
+    order?: number;
+    price?: string;
+    description?: string;
+  };
+}
+
+export async function saveImages(options: SaveImageOptions) {
+  const formData = new FormData();
+
+  options.files.forEach((file) => {
+    formData.append("files", file);
+  });
+
+  formData.append("entityType", options.entityType);
+  formData.append("imageType", options.imageType);
+
+  if (options.entityId) {
+    formData.append("entityId", options.entityId);
+  }
+
+  if (options.extraData) {
+    formData.append("extraData", JSON.stringify(options.extraData));
+  }
+
+  const res = await fetch("/api/images", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    throw new Error("Image upload failed");
+  }
+
+  return res.json(); // returns saved images
+}

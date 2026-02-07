@@ -1,9 +1,10 @@
 interface ImageUploaderProps {
   onUpload: (files: File[]) => void;
   label?: string;
+  multiple?: boolean;
 }
 
-export default function ImageUploader({ onUpload, label }: ImageUploaderProps) {
+export default function ImageUploader({ onUpload, label, multiple = true }: ImageUploaderProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
     if (files.length) onUpload(files);
@@ -15,7 +16,7 @@ export default function ImageUploader({ onUpload, label }: ImageUploaderProps) {
       <input
         type="file"
         accept="image/*"
-        multiple
+        multiple= {multiple}
         onChange={handleChange}
         className="hidden"
       />

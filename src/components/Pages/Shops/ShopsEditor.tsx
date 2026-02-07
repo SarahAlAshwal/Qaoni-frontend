@@ -123,7 +123,7 @@ export default function ShopEditorPage() {
       <div className="bg-white p-6 rounded-xl shadow-md space-y-3">
         <h2 className="font-semibold">Logo</h2>
 
-        <ImageUploader label="Upload Logo" onUpload={handleLogoUpload} />
+        <ImageUploader multiple= {false} label="Upload Logo" onUpload={handleLogoUpload} />
 
         {logo && (
           <img
@@ -237,7 +237,7 @@ export default function ShopEditorPage() {
       <div className="bg-white p-6 rounded-xl shadow-md">
         <h2 className="font-semibold mb-3">Hero Image</h2>
 
-        <ImageUploader label="Upload Hero Image" onUpload={handleHeroUpload} />
+        <ImageUploader multiple={false} label="Upload Hero Image" onUpload={handleHeroUpload} />
 
         {hero && (
           <img
