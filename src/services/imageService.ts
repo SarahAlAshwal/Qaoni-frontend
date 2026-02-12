@@ -1,11 +1,17 @@
 export interface SaveImageOptions {
   files: File[];
-  entityType: "shop" | "homepage" | "featured-shop";
+  entityType: "shop" | "product" | "featured-shop" | "homepage-slide";
   entityId?: string;
-  imageType: "logo" | "hero" | "gallery" | "slide";
+  imageType:
+    | "shop-logo"
+    | "shop-hero"
+    | "gallery"
+    | "product"
+    | "featured-shop"
+    | "homepage-slide";
   extraData?: {
     order?: number;
-    price?: string;
+    price?: number;
     description?: string;
   };
 }

@@ -1,11 +1,13 @@
 // src/components/Pages/ShopOwner/ShopEditorPage.tsx
 import { useState } from "react";
+import { saveImages } from "../../../services/imageService";
 import ImageUploader from "../../Shared/ImageUploader";
 import ImagePreviewModal from "../../Shared/ImagePreviewModal";
 import ShopPreviewPage from "./ShopPreviewPage";
 
 interface GalleryImage {
   url: string;
+  file: File;
   price?: string;
   description?: string;
   featured?: boolean;
@@ -30,23 +32,30 @@ export default function ShopEditorPage() {
   const defaultCategories = ["Food", "Beauty", "Clothing", "Tech"];
 
   const [logo, setLogo] = useState<string | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
   const [hero, setHero] = useState<string | null>(null);
+  const [heroFile, setHeroFile] = useState<File | null>(null);
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
   const [showPreviewPage, setShowPreviewPage] = useState(false);
+  const [shopId, setShopId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Upload handlers
   const handleLogoUpload = (files: File[]) => {
+    setLogoFile(files[0]);
     setLogo(URL.createObjectURL(files[0]));
   };
 
   const handleHeroUpload = (files: File[]) => {
+    setHeroFile(files[0]);
     setHero(URL.createObjectURL(files[0]));
   };
 
   const handleGalleryUpload = (files: File[]) => {
     const newImages = files.map((file) => ({
       url: URL.createObjectURL(file),
+      file,
       price: "",
       description: "",
       featured: false,
@@ -101,6 +110,78 @@ export default function ShopEditorPage() {
         [field]: value,
       },
     });
+  };
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      const payload = {
+        name: shopData.name,
+        description: shopData.description,
+        location: shopData.location,
+        categories: shopData.categories,
+        contact: shopData.contact,
+        instagram: shopData.contact.instagram,
+        facebook: shopData.contact.facebook,
+      };
+
+      const res = await fetch(`/api/shops${shopId ? `/${shopId}` : ""}`, {
+        method: shopId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to save shop");
+      }
+
+      const savedShop = await res.json();
+      const currentShopId = savedShop._id || shopId;
+      if (!shopId) setShopId(currentShopId);
+
+      if (logoFile) {
+        await saveImages({
+          files: [logoFile],
+          entityType: "shop",
+          entityId: currentShopId,
+          imageType: "shop-logo",
+        });
+      }
+
+      if (heroFile) {
+        await saveImages({
+          files: [heroFile],
+          entityType: "shop",
+          entityId: currentShopId,
+          imageType: "shop-hero",
+        });
+      }
+
+      for (let i = 0; i < gallery.length; i += 1) {
+        const item = gallery[i];
+        const priceValue =
+          item.price && item.price.trim() !== ""
+            ? Number(item.price)
+            : undefined;
+
+        await saveImages({
+          files: [item.file],
+          entityType: "shop",
+          entityId: currentShopId,
+          imageType: "gallery",
+          extraData: {
+            order: i,
+            price: Number.isFinite(priceValue) ? priceValue : undefined,
+            description: item.description,
+          },
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Save failed. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (showPreviewPage) {
@@ -320,7 +401,11 @@ export default function ShopEditorPage() {
           Preview
         </button>
 
-        <button className="px-6 py-2 bg-red-600 text-white rounded-lg">
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className="px-6 py-2 bg-red-600 text-white rounded-lg disabled:opacity-60"
+        >
           Save Changes
         </button>
       </div>
