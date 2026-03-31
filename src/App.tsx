@@ -21,7 +21,14 @@ function App() {
           <Route path="/shops/:slug" element={<ShopDetailsPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/categories/:slug" element={<CategoryDetailsPage />} />
-          <Route path="/my-shop" element={<ShopEditorPage />} />
+          <Route
+            path="/my-shop"
+            element={
+              <ProtectedRoute requiredRole="shop_owner">
+                <ShopEditorPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/about" element={<h1>About</h1>} />
           <Route path="/login" element={<h1>Login</h1>} />
           <Route
@@ -29,15 +36,6 @@ function App() {
             element={
               <ProtectedRoute  requiredRole="admin">
                 <ShopEditorPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/myShop"
-            element={
-              <ProtectedRoute  requiredRole="shop_owner">
-                {/* <DashboardPage /> */}
-                <h1>Dashboard</h1>
               </ProtectedRoute>
             }
           />

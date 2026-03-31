@@ -1,6 +1,8 @@
 // src/components/Pages/ShopOwner/ShopEditorPage.tsx
 import { useState } from "react";
 import { saveImages } from "../../../services/imageService";
+import { apiFetch } from "../../../services/api";
+import { useAuth } from "../../../hooks/useAuth";
 import ImageUploader from "../../Shared/ImageUploader";
 import ImagePreviewModal from "../../Shared/ImagePreviewModal";
 import ShopPreviewPage from "./ShopPreviewPage";
@@ -14,6 +16,7 @@ interface GalleryImage {
 }
 
 export default function ShopEditorPage() {
+  const { getAccessTokenSilently } = useAuth();
   const [shopData, setShopData] = useState({
     name: "",
     description: "",
@@ -125,11 +128,15 @@ export default function ShopEditorPage() {
         facebook: shopData.contact.facebook,
       };
 
-      const res = await fetch(`/api/shops${shopId ? `/${shopId}` : ""}`, {
-        method: shopId ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const res = await apiFetch(
+        `/api/shops${shopId ? `/${shopId}` : ""}`,
+        {
+          method: shopId ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+        getAccessTokenSilently
+      );
 
       if (!res.ok) {
         throw new Error("Failed to save shop");
@@ -140,21 +147,27 @@ export default function ShopEditorPage() {
       if (!shopId) setShopId(currentShopId);
 
       if (logoFile) {
-        await saveImages({
-          files: [logoFile],
-          entityType: "shop",
-          entityId: currentShopId,
-          imageType: "shop-logo",
-        });
+        await saveImages(
+          {
+            files: [logoFile],
+            entityType: "shop",
+            entityId: currentShopId,
+            imageType: "shop-logo",
+          },
+          getAccessTokenSilently
+        );
       }
 
       if (heroFile) {
-        await saveImages({
-          files: [heroFile],
-          entityType: "shop",
-          entityId: currentShopId,
-          imageType: "shop-hero",
-        });
+        await saveImages(
+          {
+            files: [heroFile],
+            entityType: "shop",
+            entityId: currentShopId,
+            imageType: "shop-hero",
+          },
+          getAccessTokenSilently
+        );
       }
 
       for (let i = 0; i < gallery.length; i += 1) {
@@ -164,17 +177,20 @@ export default function ShopEditorPage() {
             ? Number(item.price)
             : undefined;
 
-        await saveImages({
-          files: [item.file],
-          entityType: "shop",
-          entityId: currentShopId,
-          imageType: "gallery",
-          extraData: {
-            order: i,
-            price: Number.isFinite(priceValue) ? priceValue : undefined,
-            description: item.description,
+        await saveImages(
+          {
+            files: [item.file],
+            entityType: "shop",
+            entityId: currentShopId,
+            imageType: "gallery",
+            extraData: {
+              order: i,
+              price: Number.isFinite(priceValue) ? priceValue : undefined,
+              description: item.description,
+            },
           },
-        });
+          getAccessTokenSilently
+        );
       }
     } catch (err) {
       console.error(err);
