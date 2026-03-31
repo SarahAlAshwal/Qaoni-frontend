@@ -1,3 +1,5 @@
+import { apiFetch, type GetToken } from "./api";
+
 export interface SaveImageOptions {
   files: File[];
   entityType: "shop" | "product" | "featured-shop" | "homepage-slide";
@@ -16,7 +18,10 @@ export interface SaveImageOptions {
   };
 }
 
-export async function saveImages(options: SaveImageOptions) {
+export async function saveImages(
+  options: SaveImageOptions,
+  getToken?: GetToken
+) {
   const formData = new FormData();
 
   options.files.forEach((file) => {
@@ -34,10 +39,14 @@ export async function saveImages(options: SaveImageOptions) {
     formData.append("extraData", JSON.stringify(options.extraData));
   }
 
-  const res = await fetch("/api/images", {
-    method: "POST",
-    body: formData,
-  });
+  const res = await apiFetch(
+    "/api/images",
+    {
+      method: "POST",
+      body: formData,
+    },
+    getToken
+  );
 
   if (!res.ok) {
     throw new Error("Image upload failed");
