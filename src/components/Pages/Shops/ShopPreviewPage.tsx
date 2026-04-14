@@ -27,6 +27,8 @@ interface ShopPreviewProps {
   hero: string | null;
   gallery: GalleryImage[];
   onClose: () => void;
+  modeTitle?: string;
+  actionLabel?: string;
 }
 
 export default function ShopPreviewPage({
@@ -35,34 +37,54 @@ export default function ShopPreviewPage({
   hero,
   gallery,
   onClose,
+  modeTitle = "Preview Mode",
+  actionLabel = "Back to Editor",
 }: ShopPreviewProps) {
   return (
     <div className="flex flex-col bg-gray-100 min-h-screen">
 
       {/* Top Bar */}
       <div className="w-full bg-white shadow p-4 flex justify-between items-center sticky top-0 z-50">
-        <h1 className="text-xl font-bold">Preview Mode</h1>
+        <h1 className="text-xl font-bold">{modeTitle}</h1>
         <button
           onClick={onClose}
           className="px-4 py-2 bg-black text-white rounded-lg"
         >
-          Back to Editor
+          {actionLabel}
         </button>
       </div>
 
       {/* Hero Section */}
-      {hero && (
+      {hero ? (
         <section className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden">
           <img
             src={hero}
             alt="Hero"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-center text-white px-4">
+          <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center text-center text-white px-4">
             <h1 className="text-3xl md:text-5xl font-bold mb-3">
               {data.name}
             </h1>
 
+            <div className="flex gap-2 flex-wrap justify-center">
+              {data.categories.map((cat) => (
+                <span
+                  key={cat}
+                  className="bg-red-600 text-white px-3 py-1 rounded-full text-sm"
+                >
+                  {cat}
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : (
+        <section className="relative h-[40vh] md:h-[50vh] w-full bg-black flex items-center justify-center text-center text-white px-4">
+          <div>
+            <h1 className="text-3xl md:text-5xl font-bold mb-3">
+              {data.name}
+            </h1>
             <div className="flex gap-2 flex-wrap justify-center">
               {data.categories.map((cat) => (
                 <span

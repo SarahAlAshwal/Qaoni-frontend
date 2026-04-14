@@ -1,5 +1,5 @@
 // src/components/Pages/ShopOwner/ShopEditorPage.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { saveImages } from "../../../services/imageService";
 import { apiFetch } from "../../../services/api";
 import { useAuth } from "../../../hooks/useAuth";
@@ -9,7 +9,7 @@ import ShopPreviewPage from "./ShopPreviewPage";
 
 interface GalleryImage {
   url: string;
-  file: File;
+  file: File | null;
   price?: string;
   description?: string;
   featured?: boolean;
@@ -43,6 +43,15 @@ export default function ShopEditorPage() {
   const [showPreviewPage, setShowPreviewPage] = useState(false);
   const [shopId, setShopId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(true);
+  const [toast, setToast] = useState<string | null>(null);
+  const [originalShop, setOriginalShop] = useState<{
+    data: typeof shopData;
+    logo: string | null;
+    hero: string | null;
+    gallery: GalleryImage[];
+  } | null>(null);
 
   // Upload handlers
   const handleLogoUpload = (files: File[]) => {
@@ -115,9 +124,102 @@ export default function ShopEditorPage() {
     });
   };
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadShop = async () => {
+      try {
+        const res = await apiFetch(
+          "/api/shops/me",
+          { method: "GET" },
+          getAccessTokenSilently
+        );
+
+        if (!res.ok) {
+          if (res.status === 404) {
+            if (isMounted) setIsEditing(true);
+            if (isMounted) setOriginalShop(null);
+            return;
+          }
+          throw new Error("Failed to fetch shop");
+        }
+
+        const shop = await res.json();
+        if (!isMounted) return;
+
+        setShopId(shop._id);
+        setIsEditing(false);
+        const nextShopData = {
+          ...shopData,
+          name: shop.name || "",
+          description: shop.description || "",
+          location: shop.location || "",
+          categories: Array.isArray(shop.categories) ? shop.categories : [],
+          contact: {
+            phone: shop.contact?.phone || "",
+            email: shop.contact?.email || "",
+            address: shop.contact?.address || "",
+            instagram: shop.contact?.instagram || shop.instagram || "",
+            facebook: shop.contact?.facebook || shop.facebook || "",
+          },
+        };
+
+        setShopData(nextShopData);
+
+        const logoUrl =
+          typeof shop.logo === "string" ? shop.logo : shop.logo?.url;
+        const heroUrl =
+          typeof shop.heroImage === "string"
+            ? shop.heroImage
+            : shop.heroImage?.url;
+
+        if (logoUrl) setLogo(logoUrl);
+        if (heroUrl) setHero(heroUrl);
+
+        const loadedGallery = Array.isArray(shop.gallery)
+          ? shop.gallery.map((img: any) => ({
+              url: img.url,
+              file: null,
+              price: img.price ? String(img.price) : "",
+              description: img.description || "",
+              featured: false,
+            }))
+          : [];
+
+        setGallery(loadedGallery);
+
+        setOriginalShop({
+          data: nextShopData,
+          logo: logoUrl || null,
+          hero: heroUrl || null,
+          gallery: loadedGallery,
+        });
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    loadShop();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [getAccessTokenSilently]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timeout = window.setTimeout(() => setToast(null), 2500);
+    return () => window.clearTimeout(timeout);
+  }, [toast]);
+
   const handleSave = async () => {
     try {
       setIsSaving(true);
+      let nextLogo = logo;
+      let nextHero = hero;
+      let nextGallery = gallery;
       const payload = {
         name: shopData.name,
         description: shopData.description,
@@ -147,7 +249,7 @@ export default function ShopEditorPage() {
       if (!shopId) setShopId(currentShopId);
 
       if (logoFile) {
-        await saveImages(
+        const uploaded = await saveImages(
           {
             files: [logoFile],
             entityType: "shop",
@@ -156,10 +258,16 @@ export default function ShopEditorPage() {
           },
           getAccessTokenSilently
         );
+        const uploadedUrl = uploaded?.[0]?.url;
+        if (uploadedUrl) {
+          nextLogo = uploadedUrl;
+          setLogo(uploadedUrl);
+        }
+        setLogoFile(null);
       }
 
       if (heroFile) {
-        await saveImages(
+        const uploaded = await saveImages(
           {
             files: [heroFile],
             entityType: "shop",
@@ -168,10 +276,17 @@ export default function ShopEditorPage() {
           },
           getAccessTokenSilently
         );
+        const uploadedUrl = uploaded?.[0]?.url;
+        if (uploadedUrl) {
+          nextHero = uploadedUrl;
+          setHero(uploadedUrl);
+        }
+        setHeroFile(null);
       }
 
       for (let i = 0; i < gallery.length; i += 1) {
         const item = gallery[i];
+        if (!item.file) continue;
         const priceValue =
           item.price && item.price.trim() !== ""
             ? Number(item.price)
@@ -192,25 +307,55 @@ export default function ShopEditorPage() {
           getAccessTokenSilently
         );
       }
+      setOriginalShop({
+        data: shopData,
+        logo: nextLogo,
+        hero: nextHero,
+        gallery: nextGallery,
+      });
+      setIsEditing(false);
+      setToast("Shop saved.");
     } catch (err) {
       console.error(err);
-      alert("Save failed. Please try again.");
+      setToast("Save failed. Please try again.");
     } finally {
       setIsSaving(false);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="max-w-4xl mx-auto p-8">
+        <div className="text-gray-600">Loading your shop...</div>
+      </div>
+    );
+  }
+
   if (showPreviewPage) {
-  return (
-    <ShopPreviewPage
-      data={shopData}
-      logo={logo}
-      hero={hero}
-      gallery={gallery}
-      onClose={() => setShowPreviewPage(false)}
-    />
-  );
-}
+    return (
+      <ShopPreviewPage
+        data={shopData}
+        logo={logo}
+        hero={hero}
+        gallery={gallery}
+        onClose={() => setShowPreviewPage(false)}
+      />
+    );
+  }
+
+  if (!isEditing && shopId) {
+    return (
+      <ShopPreviewPage
+        data={shopData}
+        logo={logo}
+        hero={hero}
+        gallery={gallery}
+        onClose={() => setIsEditing(true)}
+        modeTitle="My Shop"
+        actionLabel="Edit"
+      />
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-8 space-y-10">
@@ -417,17 +562,41 @@ export default function ShopEditorPage() {
           Preview
         </button>
 
-        <button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="px-6 py-2 bg-red-600 text-white rounded-lg disabled:opacity-60"
-        >
-          Save Changes
-        </button>
+        <div className="flex gap-3">
+          {shopId && (
+            <button
+              onClick={() => {
+                if (originalShop) {
+                  setShopData(originalShop.data);
+                  setLogo(originalShop.logo);
+                  setHero(originalShop.hero);
+                  setGallery(originalShop.gallery);
+                }
+                setIsEditing(false);
+                setToast("Changes discarded.");
+              }}
+              className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg"
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="px-6 py-2 bg-red-600 text-white rounded-lg disabled:opacity-60"
+          >
+            Save Changes
+          </button>
+        </div>
       </div>
 
       {/* Image Preview */}
       <ImagePreviewModal src={previewSrc} onClose={() => setPreviewSrc(null)} />
+      {toast && (
+        <div className="fixed bottom-6 right-6 bg-black text-white px-4 py-2 rounded-lg shadow-lg">
+          {toast}
+        </div>
+      )}
     </div>
   );
 }
