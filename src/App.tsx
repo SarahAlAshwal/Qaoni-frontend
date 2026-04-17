@@ -9,6 +9,7 @@ import CategoriesPage from "./components/Pages/Categories/CategoriesPage";
 import CategoryDetailsPage from "./components/Pages/Categories/CategoryDetailsPage";
 import ShopDetailsPage from "./components/Pages/Shops/ShopDetailsPage";
 import ShopEditorPage from "./components/Pages/Shops/ShopsEditor";
+import AdminPage from "./components/Pages/Admin/AdminPage";
 
 function App() {
 
@@ -35,7 +36,7 @@ function App() {
             path="/dashboard"
             element={
               <ProtectedRoute  requiredRole="admin">
-                <ShopEditorPage />
+                <AdminPage />
               </ProtectedRoute>
             }
           />

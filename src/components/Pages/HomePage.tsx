@@ -1,195 +1,107 @@
-import React, { type FC } from 'react'
-import Slideshow from '../Shared/Slideshow';
-import FeaturedShops from '../Layouts/FeaturedShops';
-import offer2 from '../../assets/special-offer-2-3-1.webp';
-import offer3 from '../../assets/special-offer5-3-1.png';
-import offer1 from '../../assets/special-offer3-3-1.webp';
-import shop1 from '../../assets/shop1.jpeg';
-import shop2 from '../../assets/shop2.jpeg';
-import shop3 from '../../assets/shop3.jpeg';
-import shop4 from '../../assets/shop4.jpeg';
-import shop5 from '../../assets/shop5.png';
+import { useEffect, useState, type FC } from "react";
+import Slideshow, { type Slide } from "../Shared/Slideshow";
+import FeaturedShops, { type Shop } from "../Layouts/FeaturedShops";
+import { apiFetch } from "../../services/api";
 
 const HomePage: FC = () => {
-    const slidesImages = [
-    { image: offer1, link: '/', alt: 'offer-image' },
-    { image: offer2, link: '/', alt: 'offer-image' },
-    { image: offer3, link: '/', alt: 'offer-image' },
-  ]
-  const shops = [
-    {
-    id: 'shop-01',
-    name: 'First Shop',
-    logo: shop1, // image url
-    link: '/',
-  },
-  { id: 'shop-02',
-    name: 'Second Shop',
-    logo: shop2, // image url
-    link: '/',
-  },
-  { id: 'shop-03',
-    name: 'Third Shop',
-    logo: shop3, // image url
-    link: '/',
-  },
-  { id: 'shop-04',
-    name: 'Fourth Shop',
-    logo: shop4, // image url
-    link: '/',
-  },
-  { id: 'shop-05',
-    name: 'Fifth Shop',
-    logo: shop5, // image url
-    link: '/',
-  },
-  {
-    id: 'shop-06',
-    name: 'Sixth Shop',
-    logo: shop1, // image url
-    link: '/',
-  },
-  { id: 'shop-07',
-    name: 'Seventh Shop',
-    logo: shop2, // image url
-    link: '/',
-  },
-  { id: 'shop-08',
-    name: 'Eighth Shop',
-    logo: shop3, // image url
-    link: '/',
-  },
-   {
-    id: 'shop-09',
-    name: 'First Shop',
-    logo: shop1, // image url
-    link: '/',
-  },
-  { id: 'shop-10',
-    name: 'Second Shop',
-    logo: shop2, // image url
-    link: '/',
-  },
-  { id: 'shop-11',
-    name: 'Third Shop',
-    logo: shop3, // image url
-    link: '/',
-  },
-  { id: 'shop-12',
-    name: 'Fourth Shop',
-    logo: shop4, // image url
-    link: '/',
-  },
-  { id: 'shop-13',
-    name: 'Fifth Shop',
-    logo: shop5, // image url
-    link: '/',
-  },
-  {
-    id: 'shop-14',
-    name: 'Sixth Shop',
-    logo: shop1, // image url
-    link: '/',
-  },
-  { id: 'shop-15',
-    name: 'Seventh Shop',
-    logo: shop2, // image url
-    link: '/',
-  },
-  { id: 'shop-16',
-    name: 'Eighth Shop',
-    logo: shop3, // image url
-    link: '/',
-  },
-   {
-    id: 'shop-17',
-    name: 'First Shop',
-    logo: shop1, // image url
-    link: '/',
-  },
-  { id: 'shop-18',
-    name: 'Second Shop',
-    logo: shop2, // image url
-    link: '/',
-  },
-  { id: 'shop-19',
-    name: 'Third Shop',
-    logo: shop3, // image url
-    link: '/',
-  },
-  { id: 'shop-20',
-    name: 'Fourth Shop',
-    logo: shop4, // image url
-    link: '/',
-  },
-  { id: 'shop-21',
-    name: 'Fifth Shop',
-    logo: shop5, // image url
-    link: '/',
-  },
-  {
-    id: 'shop-22',
-    name: 'Sixth Shop',
-    logo: shop1, // image url
-    link: '/',
-  },
-  { id: 'shop-23',
-    name: 'Seventh Shop',
-    logo: shop2, // image url
-    link: '/',
-  },
-  { id: 'shop-24',
-    name: 'Eighth Shop',
-    logo: shop3, // image url
-    link: '/',
-  },
-   {
-    id: 'shop-25',
-    name: 'First Shop',
-    logo: shop1, // image url
-    link: '/',
-  },
-  { id: 'shop-26',
-    name: 'Second Shop',
-    logo: shop2, // image url
-    link: '/',
-  },
-  { id: 'shop-27',
-    name: 'Third Shop',
-    logo: shop3, // image url
-    link: '/',
-  },
-  { id: 'shop-28',
-    name: 'Fourth Shop',
-    logo: shop4, // image url
-    link: '/',
-  },
-  { id: 'shop-29',
-    name: 'Fifth Shop',
-    logo: shop5, // image url
-    link: '/',
-  },
-  {
-    id: 'shop-30',
-    name: 'Sixth Shop',
-    logo: shop1, // image url
-    link: '/',
-  },
-  { id: 'shop-31',
-    name: 'Seventh Shop',
-    logo: shop2, // image url
-    link: '/',
-  },
-  { id: 'shop-32',
-    name: 'Eighth Shop',
-    logo: shop3, // image url
-    link: '/',
-  },
-]
-    return(
+  const [slides, setSlides] = useState<Slide[]>([]);
+  const [featuredShops, setFeaturedShops] = useState<Shop[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadHomepage = async () => {
+      try {
+        const [slidesRes, featuredRes] = await Promise.all([
+          apiFetch("/api/homepage-slides"),
+          apiFetch("/api/featured-shops"),
+        ]);
+
+        if (!slidesRes.ok) {
+          throw new Error("Failed to load homepage slides");
+        }
+
+        if (!featuredRes.ok) {
+          throw new Error("Failed to load featured shops");
+        }
+
+        const slidesData = await slidesRes.json();
+        const featuredData = await featuredRes.json();
+
+        if (!isMounted) return;
+
+        setSlides(
+          Array.isArray(slidesData)
+            ? slidesData
+                .filter((slide: any) => slide?.image?.url)
+                .map((slide: any) => ({
+                  image: slide.image.url,
+                  link: "/",
+                  alt: slide.image.alt || "Homepage slide",
+                }))
+            : []
+        );
+
+        setFeaturedShops(
+          Array.isArray(featuredData)
+            ? featuredData
+                .filter(
+                  (item: any) =>
+                    item?.shopId?._id &&
+                    item?.shopId?.name &&
+                    item?.shopId?.slug &&
+                    item?.image?.url
+                )
+                .map((item: any) => ({
+                  id: item.shopId._id,
+                  name: item.shopId.name,
+                  logo: item.image.url,
+                  link: `/shops/${item.shopId.slug}`,
+                }))
+            : []
+        );
+      } catch (error) {
+        console.error(error);
+        if (isMounted) {
+          setErrorMessage("Homepage content is unavailable right now.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void loadHomepage();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return(
         <main className="flex-grow">
-            <Slideshow slides={slidesImages} />
-            <FeaturedShops shops={shops} />
+            <Slideshow slides={slides} />
+            {isLoading ? (
+              <section className="py-12 text-center text-gray-500">
+                Loading featured shops...
+              </section>
+            ) : null}
+            {errorMessage ? (
+              <section className="py-4 text-center text-sm text-red-600">
+                {errorMessage}
+              </section>
+            ) : null}
+            {!isLoading && featuredShops.length > 0 ? (
+              <FeaturedShops shops={featuredShops} />
+            ) : null}
+            {!isLoading && !errorMessage && featuredShops.length === 0 ? (
+              <section className="py-12 text-center text-gray-500">
+                No featured shops are available yet.
+              </section>
+            ) : null}
       </main>
     );
 }

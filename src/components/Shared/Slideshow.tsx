@@ -26,12 +26,32 @@ export default function Slideshow({
   const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
-    if (!autoPlay || isPaused) return;
+    if (slides.length === 0) {
+      setCurrentIndex(0);
+      return;
+    }
+
+    setCurrentIndex((prev) => Math.min(prev, slides.length - 1));
+  }, [slides.length]);
+
+  useEffect(() => {
+    if (!autoPlay || isPaused || slides.length <= 1) return;
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % slides.length);
     }, interval);
     return () => clearInterval(timer);
   }, [autoPlay, interval, slides.length, isPaused]);
+
+  if (slides.length === 0) {
+    return (
+      <div
+        className="flex w-full items-center justify-center rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 p-10 text-center text-gray-500 shadow-lg"
+        style={{ maxHeight: "500px", minHeight: "300px", height: "45vh" }}
+      >
+        No slideshow images available yet.
+      </div>
+    );
+  }
 
   const goToPrev = () =>
     setCurrentIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
