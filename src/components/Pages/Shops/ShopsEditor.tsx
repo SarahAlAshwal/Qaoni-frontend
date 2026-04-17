@@ -1,6 +1,10 @@
 // src/components/Pages/ShopOwner/ShopEditorPage.tsx
 import { useEffect, useState } from "react";
-import { saveImages } from "../../../services/imageService";
+import {
+  deleteShopGalleryImage,
+  saveImages,
+  updateShopGalleryImage,
+} from "../../../services/imageService";
 import { apiFetch } from "../../../services/api";
 import { useAuth } from "../../../hooks/useAuth";
 import ImageUploader from "../../Shared/ImageUploader";
@@ -9,11 +13,32 @@ import ShopPreviewPage from "./ShopPreviewPage";
 
 interface GalleryImage {
   url: string;
+  publicId?: string;
   file: File | null;
   price?: string;
   description?: string;
   featured?: boolean;
+  order?: number;
 }
+
+interface CategoryOption {
+  name: string;
+  slug: string;
+}
+
+const dedupeCategories = (categories: string[]) => {
+  const seen = new Set<string>();
+
+  return categories.filter((category) => {
+    const normalized = category.trim().toLowerCase();
+    if (!normalized || seen.has(normalized)) {
+      return false;
+    }
+
+    seen.add(normalized);
+    return true;
+  });
+};
 
 export default function ShopEditorPage() {
   const { getAccessTokenSilently } = useAuth();
@@ -31,8 +56,8 @@ export default function ShopEditorPage() {
       facebook: "",
     },
   });
-
-  const defaultCategories = ["Food", "Beauty", "Clothing", "Tech"];
+  const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
+  const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
 
   const [logo, setLogo] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -46,6 +71,7 @@ export default function ShopEditorPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
+  const [deletedGalleryPublicIds, setDeletedGalleryPublicIds] = useState<string[]>([]);
   const [originalShop, setOriginalShop] = useState<{
     data: typeof shopData;
     logo: string | null;
@@ -67,17 +93,29 @@ export default function ShopEditorPage() {
   const handleGalleryUpload = (files: File[]) => {
     const newImages = files.map((file) => ({
       url: URL.createObjectURL(file),
+      publicId: undefined,
       file,
       price: "",
       description: "",
       featured: false,
+      order: gallery.length,
     }));
 
     setGallery((prev) => [...prev, ...newImages]);
   };
 
   const removeGalleryItem = (index: number) => {
-    setGallery((prev) => prev.filter((_, i) => i !== index));
+    setGallery((prev) => {
+      const imageToRemove = prev[index];
+      if (imageToRemove?.publicId) {
+        setDeletedGalleryPublicIds((current) => [
+          ...current,
+          imageToRemove.publicId as string,
+        ]);
+      }
+
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const updateGalleryField = (
@@ -104,14 +142,55 @@ export default function ShopEditorPage() {
   };
 
   const addNewCategory = () => {
-    const cat = shopData.newCategory.trim();
-    if (!cat) return;
+    void (async () => {
+      const cat = shopData.newCategory.trim();
+      if (!cat) return;
 
-    setShopData((prev) => ({
-      ...prev,
-      categories: [...prev.categories, cat],
-      newCategory: "",
-    }));
+      try {
+        const res = await apiFetch(
+          "/api/categories",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: cat }),
+          },
+          getAccessTokenSilently
+        );
+
+        if (!res.ok) {
+          throw new Error("Failed to create category");
+        }
+
+        const category = await res.json();
+        const categoryName =
+          typeof category?.name === "string" ? category.name.trim() : cat;
+
+        setCategoryOptions((prev) => {
+          const next = [...prev];
+          const exists = next.some(
+            (item) => item.slug.toLowerCase() === String(category?.slug || "").toLowerCase()
+          );
+
+          if (!exists) {
+            next.push({
+              name: categoryName,
+              slug: category?.slug || categoryName.toLowerCase(),
+            });
+          }
+
+          return next.sort((left, right) => left.name.localeCompare(right.name));
+        });
+
+        setShopData((prev) => ({
+          ...prev,
+          categories: dedupeCategories([...prev.categories, categoryName]),
+          newCategory: "",
+        }));
+      } catch (error) {
+        console.error(error);
+        setToast("Failed to add category.");
+      }
+    })();
   };
 
   const updateContactField = (field: string, value: string) => {
@@ -126,6 +205,42 @@ export default function ShopEditorPage() {
 
   useEffect(() => {
     let isMounted = true;
+
+    const loadCategories = async () => {
+      try {
+        const res = await apiFetch("/api/categories", { method: "GET" });
+        if (!res.ok) {
+          throw new Error("Failed to fetch categories");
+        }
+
+        const categories = await res.json();
+        if (!isMounted) return;
+
+        setCategoryOptions(
+          Array.isArray(categories)
+            ? categories
+                .filter(
+                  (category: any) =>
+                    typeof category?.name === "string" &&
+                    typeof category?.slug === "string"
+                )
+                .map((category: any) => ({
+                  name: category.name,
+                  slug: category.slug,
+                }))
+            : []
+        );
+      } catch (error) {
+        console.error(error);
+        if (isMounted) {
+          setToast("Failed to load categories.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsCategoriesLoading(false);
+        }
+      }
+    };
 
     const loadShop = async () => {
       try {
@@ -154,7 +269,13 @@ export default function ShopEditorPage() {
           name: shop.name || "",
           description: shop.description || "",
           location: shop.location || "",
-          categories: Array.isArray(shop.categories) ? shop.categories : [],
+          categories: Array.isArray(shop.categories)
+            ? dedupeCategories(
+                shop.categories.filter(
+                  (value: unknown): value is string => typeof value === "string"
+                )
+              )
+            : [],
           contact: {
             phone: shop.contact?.phone || "",
             email: shop.contact?.email || "",
@@ -179,14 +300,17 @@ export default function ShopEditorPage() {
         const loadedGallery = Array.isArray(shop.gallery)
           ? shop.gallery.map((img: any) => ({
               url: img.url,
+              publicId: img.publicId,
               file: null,
               price: img.price ? String(img.price) : "",
               description: img.description || "",
-              featured: false,
+              featured: Boolean(img.featured),
+              order: img.order ?? 0,
             }))
           : [];
 
         setGallery(loadedGallery);
+        setDeletedGalleryPublicIds([]);
 
         setOriginalShop({
           data: nextShopData,
@@ -202,6 +326,7 @@ export default function ShopEditorPage() {
     };
 
     loadShop();
+    void loadCategories();
 
     return () => {
       isMounted = false;
@@ -286,27 +411,91 @@ export default function ShopEditorPage() {
 
       for (let i = 0; i < gallery.length; i += 1) {
         const item = gallery[i];
-        if (!item.file) continue;
         const priceValue =
           item.price && item.price.trim() !== ""
             ? Number(item.price)
             : undefined;
 
-        await saveImages(
-          {
-            files: [item.file],
-            entityType: "shop",
-            entityId: currentShopId,
-            imageType: "gallery",
-            extraData: {
+        if (item.file) {
+          await saveImages(
+            {
+              files: [item.file],
+              entityType: "shop",
+              entityId: currentShopId,
+              imageType: "gallery",
+              extraData: {
+                order: i,
+                price: Number.isFinite(priceValue) ? priceValue : undefined,
+                description: item.description,
+                featured: item.featured,
+              },
+            },
+            getAccessTokenSilently
+          );
+          continue;
+        }
+
+        if (item.publicId) {
+          await updateShopGalleryImage(
+            currentShopId,
+            item.publicId,
+            {
               order: i,
               price: Number.isFinite(priceValue) ? priceValue : undefined,
               description: item.description,
+              featured: item.featured,
             },
-          },
+            getAccessTokenSilently
+          );
+        }
+      }
+
+      for (const publicId of deletedGalleryPublicIds) {
+        await deleteShopGalleryImage(
+          currentShopId,
+          publicId,
           getAccessTokenSilently
         );
       }
+
+      const refreshedShopRes = await apiFetch(
+        "/api/shops/me",
+        { method: "GET" },
+        getAccessTokenSilently
+      );
+
+      if (!refreshedShopRes.ok) {
+        throw new Error("Failed to refresh shop");
+      }
+
+      const refreshedShop = await refreshedShopRes.json();
+      const refreshedLogo =
+        typeof refreshedShop.logo === "string"
+          ? refreshedShop.logo
+          : refreshedShop.logo?.url;
+      const refreshedHero =
+        typeof refreshedShop.heroImage === "string"
+          ? refreshedShop.heroImage
+          : refreshedShop.heroImage?.url;
+      const refreshedGallery = Array.isArray(refreshedShop.gallery)
+        ? refreshedShop.gallery.map((img: any) => ({
+            url: img.url,
+            publicId: img.publicId,
+            file: null,
+            price: img.price ? String(img.price) : "",
+            description: img.description || "",
+            featured: Boolean(img.featured),
+            order: img.order ?? 0,
+          }))
+        : [];
+
+      nextLogo = refreshedLogo || nextLogo;
+      nextHero = refreshedHero || nextHero;
+      nextGallery = refreshedGallery;
+      setLogo(nextLogo);
+      setHero(nextHero);
+      setGallery(refreshedGallery);
+      setDeletedGalleryPublicIds([]);
       setOriginalShop({
         data: shopData,
         logo: nextLogo,
@@ -421,7 +610,10 @@ export default function ShopEditorPage() {
         <h2 className="font-semibold">Categories</h2>
 
         <div className="flex flex-wrap gap-3">
-          {defaultCategories.map((cat) => (
+          {dedupeCategories([
+            ...categoryOptions.map((category) => category.name),
+            ...shopData.categories,
+          ]).map((cat) => (
             <label key={cat} className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -431,6 +623,9 @@ export default function ShopEditorPage() {
               {cat}
             </label>
           ))}
+          {isCategoriesLoading && (
+            <p className="text-sm text-gray-500">Loading categories...</p>
+          )}
         </div>
 
         <div className="flex gap-2 mt-2">
