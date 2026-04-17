@@ -1,53 +1,106 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SearchBar from "../../Shared/SearchBar";
 import CategoryCard from "./CategoryCard";
-import Filter, { type FilterOption } from "../../Shared/Filter";
 
-const mockCategories = [
-  { id: '1', name: "Clothing", slug: "clothing", shops: ["Shop A", "Shop B", "Shop C", "Shop D"], type: "Retail" },
-  { id: '2', name: "Restaurants", slug:"restaurants", shops: ["Pizza Place", "Sushi Bar"], type: "Food" },
-  { id: '3', name: "Electronics", slug: "electronics", shops: ["TechWorld"], type: "Retail" },
-  { id: '4', name: "Beauty & Wellness", slug:"beauty-wellness", shops: ["SpaX"], type: "Services" },
-];
+interface CategorySummary {
+  name: string;
+  slug: string;
+  shopCount: number;
+  shopNames: string[];
+}
 
 const CategoriesPage = () => {
   const [query, setQuery] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState<string>("");
+  const [categories, setCategories] = useState<CategorySummary[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const filterOptions: FilterOption[] = [
-    { label: "Retail", value: "Retail" },
-    { label: "Food", value: "Food" },
-    { label: "Services", value: "Services" },
-  ];
+  useEffect(() => {
+    let isMounted = true;
 
-  const filteredCategories = mockCategories.filter((cat) => {
-    const matchesSearch = cat.name.toLowerCase().includes(query.toLowerCase());
-    const matchesFilter = selectedFilter === "" || cat.type === selectedFilter;
-    return matchesSearch && matchesFilter;
-  });
+    const loadCategories = async () => {
+      try {
+        const res = await fetch("/api/categories");
+        if (!res.ok) {
+          throw new Error("Failed to load categories");
+        }
+
+        const data = await res.json();
+        if (!isMounted) return;
+
+        setCategories(
+          Array.isArray(data)
+            ? data
+                .filter(
+                  (category: any) =>
+                    typeof category?.name === "string" &&
+                    typeof category?.slug === "string"
+                )
+                .map((category: any) => ({
+                  name: category.name,
+                  slug: category.slug,
+                  shopCount:
+                    typeof category.shopCount === "number" ? category.shopCount : 0,
+                  shopNames: Array.isArray(category.shopNames)
+                    ? category.shopNames.filter(
+                        (name: unknown): name is string => typeof name === "string"
+                      )
+                    : [],
+                }))
+            : []
+        );
+      } catch (error) {
+        console.error(error);
+        if (isMounted) {
+          setErrorMessage("Failed to load categories.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void loadCategories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const filteredCategories = categories.filter((cat) =>
+    cat.name.toLowerCase().includes(query.toLowerCase())
+  );
 
   return (
     <div className="max-w-6xl mx-auto p-6">
       {/* Controls */}
       <div className="flex flex-col md:flex-row items-center gap-4 mb-8">
         <SearchBar placeholder="Search categories..." onSearch={setQuery} />
-
-        <Filter
-          categories={filterOptions}
-          onFilterChange={(f) => {
-            // Extract the filter value from the object
-            const filterValue = f.category || "";
-            setSelectedFilter(filterValue);
-          }}
-        />
       </div>
 
       {/* Categories Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {isLoading && (
+          <p className="text-gray-500 text-center col-span-full">
+            Loading categories...
+          </p>
+        )}
+        {errorMessage && !isLoading && (
+          <p className="text-red-600 text-center col-span-full">
+            {errorMessage}
+          </p>
+        )}
         {filteredCategories.map((cat) => (
-          <CategoryCard key={cat.id} name={cat.name} shops={cat.shops} slug={cat.slug} />
+          <CategoryCard
+            key={cat.slug}
+            name={cat.name}
+            shops={cat.shopNames}
+            shopCount={cat.shopCount}
+            slug={cat.slug}
+          />
         ))}
-        {filteredCategories.length === 0 && (
+        {!isLoading && !errorMessage && filteredCategories.length === 0 && (
           <p className="text-gray-500 text-center col-span-full">
             No categories found.
           </p>

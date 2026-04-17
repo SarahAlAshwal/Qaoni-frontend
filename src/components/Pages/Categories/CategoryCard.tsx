@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 interface CategoryCardProps {
   name: string;
   shops: string[];
+  shopCount?: number;
   maxVisibleShops?: number; // default: 3
   linkTo?: string; // link to category details page
   slug: string;
@@ -13,6 +14,7 @@ interface CategoryCardProps {
 const CategoryCard: FC<CategoryCardProps> = ({
   name,
   shops,
+  shopCount,
   maxVisibleShops = 3,
   linkTo,
   slug,
@@ -28,6 +30,9 @@ const CategoryCard: FC<CategoryCardProps> = ({
                 {name[0]} {/* first letter */}
             </div>
             <p className="font-medium text-gray-800">{name}</p>
+            <p className="mb-3 text-sm text-gray-500">
+              {shopCount ?? shops.length} shop{(shopCount ?? shops.length) === 1 ? "" : "s"}
+            </p>
 
 
         {/* Shops list */}

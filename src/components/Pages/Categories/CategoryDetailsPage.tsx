@@ -1,31 +1,82 @@
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ShopCard from "../Shops/ShopCard";
-import clothImage from "../../../assets/cloth-shop.jpeg";
-import techImage from "../../../assets/tech-store-shop.jpg";
 
-const mockShops = [
-  { id: "1", name: "TechWorld", description: "Latest gadgets", image: techImage, categories: ["electronics"] },
-  { id: "2", name: "GadgetHub", description: "Everything tech", image: techImage, categories: ["electronics"] },
-  { id: "3", name: "Fashionista", description: "Trendy clothing", image: clothImage, categories: ["clothing"] },
-];
-
-const mockCategories = [
-  { id: "1", name: "Clothing", slug: "clothing", type: "Retail" },
-  { id: "2", name: "Restaurants", slug: "restaurants", type: "Food" },
-  { id: "3", name: "Electronics", slug: "electronics", type: "Retail" },
-  { id: "4", name: "Beauty & Wellness", slug: "beauty-wellness", type: "Services" },
-];
+interface CategoryDetails {
+  name: string;
+  slug: string;
+  shopCount: number;
+  shops: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    description: string;
+    image: string;
+    categories: string[];
+  }>;
+}
 
 export default function CategoryDetailsPage() {
   const { slug } = useParams();
+  const [category, setCategory] = useState<CategoryDetails | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const category = mockCategories.find((category) => category.slug === slug);
-  const filteredShops = mockShops.filter((shop) => shop.categories.includes(slug!));
+  useEffect(() => {
+    let isMounted = true;
 
-  if (!category) {
+    const loadCategory = async () => {
+      if (!slug) {
+        setErrorMessage("Category not found.");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/categories/${slug}`);
+        if (!res.ok) {
+          if (res.status === 404) {
+            throw new Error("Category not found.");
+          }
+
+          throw new Error("Failed to load category.");
+        }
+
+        const data = await res.json();
+        if (!isMounted) return;
+
+        setCategory(data);
+      } catch (error) {
+        console.error(error);
+        if (isMounted) {
+          setErrorMessage(error instanceof Error ? error.message : "Failed to load category.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void loadCategory();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [slug]);
+
+  if (isLoading) {
     return (
       <div className="max-w-6xl mx-auto p-6 text-center">
-        <p className="text-gray-500">Category not found.</p>
+        <p className="text-gray-500">Loading category...</p>
+      </div>
+    );
+  }
+
+  if (!category || errorMessage) {
+    return (
+      <div className="max-w-6xl mx-auto p-6 text-center">
+        <p className="text-gray-500">{errorMessage || "Category not found."}</p>
       </div>
     );
   }
@@ -39,12 +90,15 @@ export default function CategoryDetailsPage() {
             {category.name}
           </h1>
         </div>
+        <p className="mt-4 text-sm text-gray-500">
+          {category.shopCount} shop{category.shopCount === 1 ? "" : "s"} in this category
+        </p>
       </div>
 
       {/* Shops under this category */}
-      {filteredShops.length > 0 ? (
+      {category.shops.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {filteredShops.map((shop) => (
+          {category.shops.map((shop) => (
             <ShopCard key={shop.id} shop={shop} />
           ))}
         </div>

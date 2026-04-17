@@ -1,6 +1,3 @@
-// src/components/FeaturedShops.tsx
-import React from "react";
-
 export interface Shop {
   id: string;
   name: string;
