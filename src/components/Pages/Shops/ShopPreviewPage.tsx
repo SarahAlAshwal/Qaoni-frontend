@@ -28,6 +28,17 @@ interface ShopPreviewProps {
   onClose: () => void;
   modeTitle?: string;
   actionLabel?: string;
+  statusLabel?: string;
+  statusActionLabel?: string;
+  onStatusAction?: () => void;
+  statusModalTitle?: string;
+  statusModalDescription?: string;
+  statusModalOpen?: boolean;
+  statusModalDisabled?: boolean;
+  statusModalConfirmLabel?: string;
+  statusChecklist?: Array<{ label: string; ok: boolean }>;
+  onCloseStatusModal?: () => void;
+  onConfirmStatusAction?: () => void;
 }
 
 export default function ShopPreviewPage({
@@ -38,13 +49,43 @@ export default function ShopPreviewPage({
   onClose,
   modeTitle = "Preview Mode",
   actionLabel = "Back to Editor",
+  statusLabel,
+  statusActionLabel,
+  onStatusAction,
+  statusModalTitle,
+  statusModalDescription,
+  statusModalOpen = false,
+  statusModalDisabled = false,
+  statusModalConfirmLabel,
+  statusChecklist,
+  onCloseStatusModal,
+  onConfirmStatusAction,
 }: ShopPreviewProps) {
   return (
     <div className="flex flex-col bg-gray-100 min-h-screen">
 
       {/* Top Bar */}
       <div className="w-full bg-white shadow p-4 flex justify-between items-center sticky top-0 z-50">
-        <h1 className="text-xl font-bold">{modeTitle}</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-bold">{modeTitle}</h1>
+          {statusLabel ? (
+            <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700">
+              {statusLabel}
+            </span>
+          ) : null}
+          {statusActionLabel && onStatusAction ? (
+            <button
+              onClick={onStatusAction}
+              className={`rounded-lg px-3 py-1 text-sm font-medium ${
+                statusLabel === "Published"
+                  ? "border border-red-600 bg-white text-red-600"
+                  : "bg-red-600 text-white"
+              }`}
+            >
+              {statusActionLabel}
+            </button>
+          ) : null}
+        </div>
         <button
           onClick={onClose}
           className="px-4 py-2 bg-black text-white rounded-lg"
@@ -228,6 +269,51 @@ export default function ShopPreviewPage({
           </div>
         </div>
       </section>
+
+      {statusModalOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+            <h2 className="text-xl font-semibold text-gray-900">
+              {statusModalTitle}
+            </h2>
+            {statusModalDescription ? (
+              <p className="mt-2 text-sm text-gray-600">{statusModalDescription}</p>
+            ) : null}
+
+            {statusChecklist?.length ? (
+              <div className="mt-4 rounded-xl bg-gray-50 p-4">
+                <p className="text-sm font-medium text-gray-900">Checklist</p>
+                <div className="mt-3 space-y-2">
+                  {statusChecklist.map((check) => (
+                    <div key={check.label} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-700">{check.label}</span>
+                      <span className={check.ok ? "text-green-600" : "text-amber-600"}>
+                        {check.ok ? "Ready" : "Missing"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={onCloseStatusModal}
+                className="rounded-lg bg-gray-200 px-4 py-2 text-sm text-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={onConfirmStatusAction}
+                disabled={statusModalDisabled}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm text-white disabled:opacity-60"
+              >
+                {statusModalConfirmLabel}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 // src/components/Pages/ShopOwner/ShopEditorPage.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   deleteShopGalleryImage,
   saveImages,
@@ -67,6 +67,8 @@ export default function ShopEditorPage() {
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
   const [showPreviewPage, setShowPreviewPage] = useState(false);
   const [shopId, setShopId] = useState<string | null>(null);
+  const [isPublished, setIsPublished] = useState(false);
+  const [visibilityModal, setVisibilityModal] = useState<"publish" | "unpublish" | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(true);
@@ -77,6 +79,7 @@ export default function ShopEditorPage() {
     logo: string | null;
     hero: string | null;
     gallery: GalleryImage[];
+    isPublished: boolean;
   } | null>(null);
 
   // Upload handlers
@@ -264,6 +267,7 @@ export default function ShopEditorPage() {
 
         setShopId(shop._id);
         setIsEditing(false);
+        setIsPublished(Boolean(shop.isPublished));
         const nextShopData = {
           ...shopData,
           name: shop.name || "",
@@ -317,6 +321,7 @@ export default function ShopEditorPage() {
           logo: logoUrl || null,
           hero: heroUrl || null,
           gallery: loadedGallery,
+          isPublished: Boolean(shop.isPublished),
         });
       } catch (err) {
         console.error(err);
@@ -339,7 +344,20 @@ export default function ShopEditorPage() {
     return () => window.clearTimeout(timeout);
   }, [toast]);
 
-  const handleSave = async () => {
+  const publishChecks = useMemo(
+    () => [
+      { label: "Shop name", ok: Boolean(shopData.name.trim()) },
+      { label: "Description", ok: Boolean(shopData.description.trim()) },
+      { label: "At least one category", ok: shopData.categories.length > 0 },
+      { label: "Logo", ok: Boolean(logo) },
+      { label: "Hero image or gallery image", ok: Boolean(hero) || gallery.length > 0 },
+    ],
+    [gallery.length, hero, logo, shopData.categories.length, shopData.description, shopData.name]
+  );
+
+  const canPublish = publishChecks.every((check) => check.ok);
+
+  const handleSave = async (nextPublished = isPublished) => {
     try {
       setIsSaving(true);
       let nextLogo = logo;
@@ -353,6 +371,7 @@ export default function ShopEditorPage() {
         contact: shopData.contact,
         instagram: shopData.contact.instagram,
         facebook: shopData.contact.facebook,
+        isPublished: nextPublished,
       };
 
       const res = await apiFetch(
@@ -495,15 +514,17 @@ export default function ShopEditorPage() {
       setLogo(nextLogo);
       setHero(nextHero);
       setGallery(refreshedGallery);
+      setIsPublished(Boolean(refreshedShop.isPublished));
       setDeletedGalleryPublicIds([]);
       setOriginalShop({
         data: shopData,
         logo: nextLogo,
         hero: nextHero,
         gallery: nextGallery,
+        isPublished: Boolean(refreshedShop.isPublished),
       });
       setIsEditing(false);
-      setToast("Shop saved.");
+      setToast(nextPublished ? "Shop published." : "Shop saved as draft.");
     } catch (err) {
       console.error(err);
       setToast("Save failed. Please try again.");
@@ -527,6 +548,7 @@ export default function ShopEditorPage() {
         logo={logo}
         hero={hero}
         gallery={gallery}
+        statusLabel={isPublished ? "Published" : "Draft"}
         onClose={() => setShowPreviewPage(false)}
       />
     );
@@ -539,6 +561,32 @@ export default function ShopEditorPage() {
         logo={logo}
         hero={hero}
         gallery={gallery}
+        statusLabel={isPublished ? "Published" : "Draft"}
+        statusActionLabel={isPublished ? "Unpublish" : "Publish"}
+        onStatusAction={() =>
+          setVisibilityModal(isPublished ? "unpublish" : "publish")
+        }
+        statusModalOpen={Boolean(visibilityModal)}
+        statusModalTitle={
+          visibilityModal === "publish" ? "Publish shop?" : "Unpublish shop?"
+        }
+        statusModalDescription={
+          visibilityModal === "publish"
+            ? "Publishing makes your shop visible on the public site and allows it to qualify for featured placement."
+            : "Unpublishing removes your shop from public pages and featured-shop eligibility."
+        }
+        statusChecklist={visibilityModal === "publish" ? publishChecks : undefined}
+        statusModalDisabled={
+          isSaving || (visibilityModal === "publish" && !canPublish)
+        }
+        statusModalConfirmLabel={
+          visibilityModal === "publish" ? "Confirm Publish" : "Confirm Unpublish"
+        }
+        onCloseStatusModal={() => setVisibilityModal(null)}
+        onConfirmStatusAction={() => {
+          void handleSave(visibilityModal === "publish");
+          setVisibilityModal(null);
+        }}
         onClose={() => setIsEditing(true)}
         modeTitle="My Shop"
         actionLabel="Edit"
@@ -549,6 +597,33 @@ export default function ShopEditorPage() {
   return (
     <div className="max-w-4xl mx-auto p-8 space-y-10">
       <h1 className="text-2xl font-bold">Manage Your Shop</h1>
+
+      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm text-gray-500">Visibility</p>
+            <p className="text-base font-medium text-gray-900">
+              {isPublished ? "Published" : "Draft"}
+            </p>
+          </div>
+          <div className="flex flex-col items-start gap-3 sm:items-end">
+            <p className="text-sm text-gray-600">
+              Published shops appear on the public site and can be featured once setup is complete.
+            </p>
+            <button
+              onClick={() => setVisibilityModal(isPublished ? "unpublish" : "publish")}
+              disabled={isSaving}
+              className={`rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60 ${
+                isPublished
+                  ? "border border-red-600 bg-white text-red-600"
+                  : "bg-red-600 text-white"
+              }`}
+            >
+              {isPublished ? "Unpublish Shop" : "Publish Shop"}
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* LOGO Upload */}
       <div className="bg-white p-6 rounded-xl shadow-md space-y-3">
@@ -766,6 +841,7 @@ export default function ShopEditorPage() {
                   setLogo(originalShop.logo);
                   setHero(originalShop.hero);
                   setGallery(originalShop.gallery);
+                  setIsPublished(originalShop.isPublished);
                 }
                 setIsEditing(false);
                 setToast("Changes discarded.");
@@ -776,7 +852,7 @@ export default function ShopEditorPage() {
             </button>
           )}
           <button
-            onClick={handleSave}
+            onClick={() => void handleSave()}
             disabled={isSaving}
             className="px-6 py-2 bg-red-600 text-white rounded-lg disabled:opacity-60"
           >
@@ -787,6 +863,62 @@ export default function ShopEditorPage() {
 
       {/* Image Preview */}
       <ImagePreviewModal src={previewSrc} onClose={() => setPreviewSrc(null)} />
+      {visibilityModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+            <h2 className="text-xl font-semibold text-gray-900">
+              {visibilityModal === "publish" ? "Publish shop?" : "Unpublish shop?"}
+            </h2>
+            <p className="mt-2 text-sm text-gray-600">
+              {visibilityModal === "publish"
+                ? "Publishing makes your shop visible on the public site and allows it to qualify for featured placement."
+                : "Unpublishing removes your shop from public pages and featured-shop eligibility."}
+            </p>
+
+            {visibilityModal === "publish" && (
+              <div className="mt-4 rounded-xl bg-gray-50 p-4">
+                <p className="text-sm font-medium text-gray-900">Publish checklist</p>
+                <div className="mt-3 space-y-2">
+                  {publishChecks.map((check) => (
+                    <div key={check.label} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-700">{check.label}</span>
+                      <span className={check.ok ? "text-green-600" : "text-amber-600"}>
+                        {check.ok ? "Ready" : "Missing"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                {!canPublish && (
+                  <p className="mt-3 text-sm text-amber-700">
+                    Finish the missing setup items before publishing.
+                  </p>
+                )}
+              </div>
+            )}
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setVisibilityModal(null)}
+                className="rounded-lg bg-gray-200 px-4 py-2 text-sm text-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  void handleSave(visibilityModal === "publish");
+                  setVisibilityModal(null);
+                }}
+                disabled={isSaving || (visibilityModal === "publish" && !canPublish)}
+                className={`rounded-lg px-4 py-2 text-sm text-white disabled:opacity-60 ${
+                  visibilityModal === "publish" ? "bg-red-600" : "bg-gray-800"
+                }`}
+              >
+                {visibilityModal === "publish" ? "Confirm Publish" : "Confirm Unpublish"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {toast && (
         <div className="fixed bottom-6 right-6 bg-black text-white px-4 py-2 rounded-lg shadow-lg">
           {toast}
