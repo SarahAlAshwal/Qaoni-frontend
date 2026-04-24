@@ -52,12 +52,12 @@ const HomePage: FC = () => {
                     item?.shopId?._id &&
                     item?.shopId?.name &&
                     item?.shopId?.slug &&
-                    item?.image?.url
+                    (item?.image?.url || item?.shopId?.logo?.url)
                 )
                 .map((item: any) => ({
                   id: item.shopId._id,
                   name: item.shopId.name,
-                  logo: item.image.url,
+                  logo: item.image?.url || item.shopId?.logo?.url,
                   link: `/shops/${item.shopId.slug}`,
                 }))
             : []

@@ -9,6 +9,7 @@ interface ShopOption {
   id: string;
   name: string;
   slug: string;
+  logoUrl?: string;
   eligible: boolean;
   reasons: string[];
   isPublished?: boolean;
@@ -104,7 +105,7 @@ export default function FeaturedShopsManager() {
             id: item._id,
             shopId: item.shopId?._id || "",
             shopName: item.shopId?.name || "Unknown shop",
-            url: item.image?.url || "",
+            url: item.image?.url || item.shopId?.logo?.url || "",
             order: item.order,
             isActive: item.isActive ?? true,
             file: null,
@@ -124,6 +125,7 @@ export default function FeaturedShopsManager() {
                 id: shop.id,
                 name: shop.name,
                 slug: shop.slug,
+                logoUrl: typeof shop.logoUrl === "string" ? shop.logoUrl : "",
                 eligible: Boolean(shop.eligible),
                 reasons: Array.isArray(shop.reasons) ? shop.reasons : [],
                 isPublished: shop.isPublished,
@@ -157,6 +159,31 @@ export default function FeaturedShopsManager() {
     return () => window.clearTimeout(timeout);
   }, [message]);
 
+  const addDraftItem = (selectedShop: ShopOption, file?: File | null) => {
+    const previewUrl = file
+      ? URL.createObjectURL(file)
+      : selectedShop.logoUrl || "";
+
+    const draftItem: MediaItem = {
+      id: `draft-featured-${Date.now()}`,
+      shopId: selectedShop.id,
+      shopName: selectedShop.name,
+      url: previewUrl,
+      order: items.length + 1,
+      isActive: true,
+      file: file ?? null,
+      isNew: true,
+    };
+
+    setItems((prev) => [...prev, draftItem]);
+    setSelectedShopId("");
+    setMessage(
+      file
+        ? "Draft featured shop added with a custom image. Save to publish changes."
+        : "Draft featured shop added using the shop logo. Save to publish changes."
+    );
+  };
+
   const handleUpload = (files: File[]) => {
     if (!selectedShopId) {
       setMessage("Select a shop before adding a featured draft.");
@@ -170,20 +197,21 @@ export default function FeaturedShopsManager() {
       return;
     }
 
-    const draftItem: MediaItem = {
-      id: `draft-featured-${Date.now()}`,
-      shopId: selectedShop.id,
-      shopName: selectedShop.name,
-      url: URL.createObjectURL(file),
-      order: items.length + 1,
-      isActive: true,
-      file,
-      isNew: true,
-    };
+    addDraftItem(selectedShop, file);
+  };
 
-    setItems((prev) => [...prev, draftItem]);
-    setSelectedShopId("");
-    setMessage("Draft featured shop added. Save to publish changes.");
+  const handleAddWithLogo = () => {
+    if (!selectedShopId) {
+      setMessage("Select a shop before adding a featured draft.");
+      return;
+    }
+
+    const selectedShop = shops.find((shop) => shop.id === selectedShopId);
+    if (!selectedShop) {
+      return;
+    }
+
+    addDraftItem(selectedShop, null);
   };
 
   const updateOrder = (id: string, newOrder: number) => {
@@ -264,7 +292,7 @@ export default function FeaturedShopsManager() {
       }
 
       for (const item of items) {
-        if (item.isNew && item.file) {
+        if (item.isNew) {
           const createRes = await apiFetch(
             "/api/featured-shops",
             {
@@ -290,15 +318,17 @@ export default function FeaturedShopsManager() {
 
           const createdItem = await createRes.json();
 
-          await saveImages(
-            {
-              files: [item.file],
-              entityType: "featured-shop",
-              entityId: createdItem._id,
-              imageType: "featured-shop",
-            },
-            getAccessTokenSilently
-          );
+          if (item.file) {
+            await saveImages(
+              {
+                files: [item.file],
+                entityType: "featured-shop",
+                entityId: createdItem._id,
+                imageType: "featured-shop",
+              },
+              getAccessTokenSilently
+            );
+          }
 
           continue;
         }
@@ -359,8 +389,15 @@ export default function FeaturedShopsManager() {
             ))}
           </select>
 
+          <button
+            onClick={handleAddWithLogo}
+            disabled={isSaving || !selectedShopId}
+            className="rounded-lg bg-black px-4 py-2 text-sm text-white cursor-pointer disabled:opacity-50"
+          >
+            Add Using Shop Logo
+          </button>
           <ImageUploader
-            label={isSaving ? "Saving..." : "Add Draft Featured Image"}
+            label={isSaving ? "Saving..." : "Add Custom Image"}
             multiple={false}
             onUpload={handleUpload}
           />
