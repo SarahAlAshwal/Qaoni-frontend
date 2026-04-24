@@ -42,6 +42,24 @@ export default function Slideshow({
     return () => clearInterval(timer);
   }, [autoPlay, interval, slides.length, isPaused]);
 
+  const goToPrev = () =>
+    setCurrentIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+  const goToNext = () => setCurrentIndex((prev) => (prev + 1) % slides.length);
+
+  const handlers = useSwipeable({
+    onSwipedLeft: () => {
+      if (slides.length > 1) {
+        goToNext();
+      }
+    },
+    onSwipedRight: () => {
+      if (slides.length > 1) {
+        goToPrev();
+      }
+    },
+    trackMouse: true,
+  });
+
   if (slides.length === 0) {
     return (
       <div
@@ -52,16 +70,6 @@ export default function Slideshow({
       </div>
     );
   }
-
-  const goToPrev = () =>
-    setCurrentIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
-  const goToNext = () => setCurrentIndex((prev) => (prev + 1) % slides.length);
-
-  const handlers = useSwipeable({
-    onSwipedLeft: goToNext,
-    onSwipedRight: goToPrev,
-    trackMouse: true,
-  });
 
   return (
     <div
