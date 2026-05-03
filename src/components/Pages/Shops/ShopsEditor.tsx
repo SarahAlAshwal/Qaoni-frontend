@@ -615,8 +615,8 @@ export default function ShopEditorPage() {
               disabled={isSaving}
               className={`rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60 ${
                 isPublished
-                  ? "border border-red-600 bg-white text-red-600"
-                  : "bg-red-600 text-white"
+                  ? "border border-brand-primary bg-white text-brand-primary hover:border-brand-secondary hover:text-brand-secondary"
+                  : "bg-brand-primary text-white hover:bg-brand-secondary"
               }`}
             >
               {isPublished ? "Unpublish Shop" : "Publish Shop"}
@@ -854,7 +854,7 @@ export default function ShopEditorPage() {
           <button
             onClick={() => void handleSave()}
             disabled={isSaving}
-            className="px-6 py-2 bg-red-600 text-white rounded-lg disabled:opacity-60"
+            className="px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-secondary disabled:opacity-60"
           >
             Save Changes
           </button>
@@ -910,7 +910,7 @@ export default function ShopEditorPage() {
                 }}
                 disabled={isSaving || (visibilityModal === "publish" && !canPublish)}
                 className={`rounded-lg px-4 py-2 text-sm text-white disabled:opacity-60 ${
-                  visibilityModal === "publish" ? "bg-red-600" : "bg-gray-800"
+                  visibilityModal === "publish" ? "bg-brand-primary hover:bg-brand-secondary" : "bg-gray-800 hover:bg-gray-700"
                 }`}
               >
                 {visibilityModal === "publish" ? "Confirm Publish" : "Confirm Unpublish"}

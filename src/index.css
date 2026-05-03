@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+@source "../src/**/*.{ts,tsx,js,jsx,html}";  /* adjust path as needed */
+@theme {
+  --color-brand-primary: #000000;
+  --color-brand-primary-dark: #1a1a1a;
+  --color-brand-secondary: #61c3da;
+  --color-brand-accent: #f9a624;
+}

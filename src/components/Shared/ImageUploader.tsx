@@ -11,7 +11,7 @@ export default function ImageUploader({ onUpload, label, multiple = true }: Imag
   };
 
   return (
-    <label className="cursor-pointer bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">
+    <label className="cursor-pointer bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-brand-secondary transition">
       {label || "Upload Images"}
       <input
         type="file"

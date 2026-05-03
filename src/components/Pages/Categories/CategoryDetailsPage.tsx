@@ -85,7 +85,7 @@ export default function CategoryDetailsPage() {
     <div className="max-w-6xl mx-auto p-6">
       {/* Category header */}
       <div className="flex flex-col items-center mb-10">
-        <div className="w-36 h-36 rounded-full bg-red-600 flex items-center justify-center shadow-md">
+        <div className="w-36 h-36 rounded-full bg-brand-primary flex items-center justify-center shadow-md">
           <h1 className="text-white text-2xl font-semibold text-center px-3">
             {category.name}
           </h1>

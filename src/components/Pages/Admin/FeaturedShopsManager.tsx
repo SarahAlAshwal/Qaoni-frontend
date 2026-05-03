@@ -428,7 +428,7 @@ export default function FeaturedShopsManager() {
             <button
               onClick={() => void handleSave()}
               disabled={!hasUnsavedChanges || isSaving}
-              className="rounded-lg bg-red-600 px-4 py-2 text-sm text-white disabled:opacity-50"
+              className="rounded-lg bg-brand-primary px-4 py-2 text-sm text-white hover:bg-brand-secondary disabled:opacity-50"
             >
               Save Changes
             </button>

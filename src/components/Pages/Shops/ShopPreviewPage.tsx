@@ -78,8 +78,8 @@ export default function ShopPreviewPage({
               onClick={onStatusAction}
               className={`rounded-lg px-3 py-1 text-sm font-medium ${
                 statusLabel === "Published"
-                  ? "border border-red-600 bg-white text-red-600"
-                  : "bg-red-600 text-white"
+                  ? "border border-brand-primary bg-white text-brand-primary hover:border-brand-secondary hover:text-brand-secondary"
+                  : "bg-brand-primary text-white hover:bg-brand-secondary"
               }`}
             >
               {statusActionLabel}
@@ -111,7 +111,7 @@ export default function ShopPreviewPage({
               {data.categories.map((cat) => (
                 <span
                   key={cat}
-                  className="bg-red-600 text-white px-3 py-1 rounded-full text-sm"
+                  className="bg-brand-primary text-white px-3 py-1 rounded-full text-sm"
                 >
                   {cat}
                 </span>
@@ -129,7 +129,7 @@ export default function ShopPreviewPage({
               {data.categories.map((cat) => (
                 <span
                   key={cat}
-                  className="bg-red-600 text-white px-3 py-1 rounded-full text-sm"
+                  className="bg-brand-primary text-white px-3 py-1 rounded-full text-sm"
                 >
                   {cat}
                 </span>
@@ -180,7 +180,7 @@ export default function ShopPreviewPage({
                     />
                     <div className="p-4">
                       {product.price && (
-                        <p className="text-red-600 font-medium">
+                        <p className="text-brand-primary font-medium">
                           ${product.price}
                         </p>
                       )}
@@ -218,7 +218,7 @@ export default function ShopPreviewPage({
                 />
                 <div className="p-4">
                   {img.price && (
-                    <p className="text-red-600 font-medium">{img.price}</p>
+                    <p className="text-brand-primary font-medium">{img.price}</p>
                   )}
                   {img.description && (
                     <p className="text-gray-700 mt-1">{img.description}</p>
@@ -306,7 +306,7 @@ export default function ShopPreviewPage({
               <button
                 onClick={onConfirmStatusAction}
                 disabled={statusModalDisabled}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm text-white disabled:opacity-60"
+                className="rounded-lg bg-brand-primary px-4 py-2 text-sm text-white hover:bg-brand-secondary disabled:opacity-60"
               >
                 {statusModalConfirmLabel}
               </button>

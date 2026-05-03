@@ -115,7 +115,7 @@ export default function ShopDetailsPage() {
               {shop.categories.map((cat) => (
                 <span
                   key={cat}
-                  className="bg-red-600 text-white px-3 py-1 rounded-full text-sm"
+                  className="bg-brand-primary text-white px-3 py-1 rounded-full text-sm"
                 >
                   {cat}
                 </span>
@@ -131,7 +131,7 @@ export default function ShopDetailsPage() {
               {shop.categories.map((cat) => (
                 <span
                   key={cat}
-                  className="bg-red-600 text-white px-3 py-1 rounded-full text-sm"
+                  className="bg-brand-primary text-white px-3 py-1 rounded-full text-sm"
                 >
                   {cat}
                 </span>
@@ -177,7 +177,7 @@ export default function ShopDetailsPage() {
                   />
                   <div className="p-4">
                     {typeof product.price === "number" ? (
-                      <p className="text-red-600 font-medium mt-1">${product.price}</p>
+                      <p className="text-brand-primary font-medium mt-1">${product.price}</p>
                     ) : null}
                     {product.description ? (
                       <p className="text-gray-700 mt-1">{product.description}</p>
@@ -201,7 +201,7 @@ export default function ShopDetailsPage() {
           >
             <button
               onClick={() => setSelectedProduct(null)}
-              className="fixed top-6 right-6 text-white bg-red-600 cursor-pointer bg-opacity-50 hover:bg-opacity-80 rounded-full p-3 text-2xl z-[60]"
+              className="fixed top-6 right-6 text-white bg-brand-primary cursor-pointer bg-opacity-50 hover:bg-opacity-80 rounded-full p-3 text-2xl z-[60]"
             >
               X
             </button>
@@ -241,7 +241,7 @@ export default function ShopDetailsPage() {
                 />
                 <div className="p-4">
                   {typeof product.price === "number" ? (
-                    <p className="text-red-600 font-medium mt-1">${product.price}</p>
+                    <p className="text-brand-primary font-medium mt-1">${product.price}</p>
                   ) : null}
                   {product.description ? (
                     <p className="text-gray-700 mt-1">{product.description}</p>

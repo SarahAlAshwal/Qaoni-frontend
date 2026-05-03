@@ -26,7 +26,7 @@ const CategoryCard: FC<CategoryCardProps> = ({
     <Link  to={`/categories/${slug}`} >
         <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center text-center hover:shadow-lg transition min-h-[280px]">
         {/* Category circle */}
-            <div className="w-20 h-20 flex items-center justify-center rounded-full bg-red-600 text-white font-bold text-xl mb-2">
+            <div className="w-20 h-20 flex items-center justify-center rounded-full bg-brand-primary text-white font-bold text-xl mb-2">
                 {name[0]} {/* first letter */}
             </div>
             <p className="font-medium text-gray-800">{name}</p>
@@ -47,12 +47,12 @@ const CategoryCard: FC<CategoryCardProps> = ({
             linkTo ? (
             <Link
                 to={linkTo}
-                className="mt-3 text-red-600 font-medium hover:underline"
+                className="mt-3 text-brand-primary font-medium hover:underline"
             >
                 View All Shops
             </Link>
             ) : (
-            <button className="mt-3 text-red-600 font-medium hover:underline">
+            <button className="mt-3 text-brand-primary font-medium hover:underline">
                 View All Shops
             </button>
             )

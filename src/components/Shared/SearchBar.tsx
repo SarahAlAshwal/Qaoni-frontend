@@ -37,7 +37,7 @@ const SearchBar: FC<SearchBarProps> = ({
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-4 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+        className="w-full px-4 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-brand-accent"
       />
 
       {/* ❌ Clear button */}

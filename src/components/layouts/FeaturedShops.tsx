@@ -36,7 +36,7 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
             <p className="text-base font-semibold text-gray-800">{shop.name}</p>
             <a
               href={shop.link}
-              className="mt-2 px-4 py-1 bg-red-600 text-white text-sm rounded-md font-medium hover:bg-red-700 transition"
+              className="mt-2 px-4 py-1 bg-brand-primary text-white text-sm rounded-md font-medium hover:bg-brand-secondary transition"
             >
               Shop Now
             </a>
@@ -47,7 +47,7 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
         <div className="sm:hidden flex justify-center mt-8">
           <a
             href="/shops"
-            className="px-5 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition"
+            className="px-5 py-2 bg-brand-primary text-white rounded-lg font-medium hover:bg-brand-secondary transition"
           >
             View All Shops
           </a>
@@ -69,7 +69,7 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
             <p className="text-base font-semibold text-gray-800">{shop.name}</p>
             <a
               href={shop.link}
-              className="mt-2 px-4 py-1 bg-red-600 text-white text-sm rounded-md font-medium hover:bg-red-700 transition"
+              className="mt-2 px-4 py-1 bg-brand-primary text-white text-sm rounded-md font-medium hover:bg-brand-secondary transition"
             >
               Shop Now
             </a>
@@ -80,7 +80,7 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
         <div className="hidden sm:flex md:hidden justify-center mt-8">
           <a
             href="/shops"
-            className="px-5 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition"
+            className="px-5 py-2 bg-brand-primary text-white rounded-lg font-medium hover:bg-brand-secondary transition"
           >
             View All Shops
           </a>
@@ -103,11 +103,11 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
             <a
               href={shop.link}
               className="absolute inset-0 flex flex-col items-center justify-center 
-                         bg-red-600/70 opacity-0 group-hover:opacity-100 
+                         bg-brand-primary/70 opacity-0 group-hover:opacity-100 
                          transition-opacity duration-300 text-white"
             >
               <p className="text-lg font-semibold mb-2">{shop.name}</p>
-              <span className="px-3 py-1 bg-white text-red-600 text-sm rounded-md font-medium hover:bg-gray-100">
+              <span className="px-3 py-1 bg-white text-brand-primary text-sm rounded-md font-medium hover:bg-brand-accent/30">
                 Shop Now
               </span>
             </a>
@@ -118,7 +118,7 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
         <div className="hidden md:flex justify-center mt-8">
           <a
             href="/shops"
-            className="px-5 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition"
+            className="px-5 py-2 bg-brand-primary text-white rounded-lg font-medium hover:bg-brand-secondary transition"
           >
             View All Shops
           </a>

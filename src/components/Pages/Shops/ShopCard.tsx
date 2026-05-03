@@ -95,7 +95,7 @@ useEffect(() => {
           {visibleCategories.map((cat, i) => (
             <span
               key={i}
-              className="bg-red-600/90 text-white text-xs px-3 py-1 rounded-full shadow-md"
+              className="bg-brand-primary/90 text-white text-xs px-3 py-1 rounded-full shadow-md"
             >
               {cat}
             </span>
@@ -126,7 +126,7 @@ useEffect(() => {
         {/* Hover CTA */}
         <Link
           to={`/shops/${shop.slug || shop.name.toLowerCase().replace(/\s+/g, "-")}`}
-          className="mt-4 bg-white text-red-600 font-medium text-sm px-4 py-2 rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition duration-300"
+          className="mt-4 bg-white text-brand-primary font-medium text-sm px-4 py-2 rounded-lg shadow-md opacity-0 group-hover:opacity-100 text-brand-secondary transition duration-300"
         >
           Visit Shop
         </Link>
