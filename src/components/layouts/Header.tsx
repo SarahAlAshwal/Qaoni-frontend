@@ -8,15 +8,15 @@ const Header: FC = () => {
  const { user, isAuthenticated, isAdmin, isShopOwner, login, logout } = useAuth();
 
   return (
-    <header className="w-full shadow-md bg-white">
+    <header className="w-full shadow-md bg-white relative">
       <div className="container mx-auto flex justify-between items-center py-4 px-6">
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2">
-          <img src="/logo-transparent-light.png" alt="Qoony Logo" className="h-32 w-auto" />
+          <img src="/logo-transparent-light.png" alt="Qaoni Logo" className="h-32 w-auto max-[1050px]:h-20" />
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex space-x-6 text-gray-700 font-medium">
+        <nav className="hidden min-[830px]:flex space-x-6 text-gray-700 font-medium">
           <Link to="/" className="hover:text-brand-secondary transition-colors">Home</Link>
           <Link to="/shops" className="hover:text-brand-secondary transition-colors">Shops</Link>
           <Link to="/categories" className="hover:text-brand-secondary transition-colors">Categories</Link>
@@ -38,7 +38,7 @@ const Header: FC = () => {
         </nav>
 
         {/* Login button (desktop only) */}
-        <div className="hidden md:block">
+        <div className="hidden min-[830px]:block">
           {!isAuthenticated ? (
             <button
               onClick={() => login()}
@@ -62,7 +62,7 @@ const Header: FC = () => {
         {/* Hamburger button (mobile only) */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden text-gray-700 focus:outline-none"
+          className="min-[830px]:hidden text-gray-700 focus:outline-none"
           aria-label="Toggle menu"
         >
           {isOpen ? (
@@ -81,7 +81,7 @@ const Header: FC = () => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200 shadow-md">
+        <div className="min-[830px]:hidden absolute top-full left-0 w-full bg-white border-t border-gray-200 shadow-md z-50">
           <nav className="flex flex-col space-y-4 px-6 py-4 text-gray-700 font-medium">
             <Link to="/" className="hover:text-brand-secondary transition-colors" onClick={() => setIsOpen(false)}>Home</Link>
             <Link to="/shops" className="hover:text-brand-secondary transition-colors" onClick={() => setIsOpen(false)}>Shops</Link>

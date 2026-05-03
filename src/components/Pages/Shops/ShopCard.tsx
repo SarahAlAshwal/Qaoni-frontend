@@ -95,7 +95,7 @@ useEffect(() => {
           {visibleCategories.map((cat, i) => (
             <span
               key={i}
-              className="bg-brand-primary/90 text-white text-xs px-3 py-1 rounded-full shadow-md"
+              className="bg-brand-secondary/90 text-white text-xs px-3 py-1 rounded-full shadow-md"
             >
               {cat}
             </span>
