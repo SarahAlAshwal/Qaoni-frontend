@@ -46,6 +46,7 @@ export default function ShopEditorPage() {
     name: "",
     description: "",
     location: "",
+    hasDelivery: false,
     categories: [] as string[],
     newCategory: "",
     contact: {
@@ -273,6 +274,7 @@ export default function ShopEditorPage() {
           name: shop.name || "",
           description: shop.description || "",
           location: shop.location || "",
+          hasDelivery: Boolean(shop.hasDelivery),
           categories: Array.isArray(shop.categories)
             ? dedupeCategories(
                 shop.categories.filter(
@@ -367,6 +369,7 @@ export default function ShopEditorPage() {
         name: shopData.name,
         description: shopData.description,
         location: shopData.location,
+        hasDelivery: shopData.hasDelivery,
         categories: shopData.categories,
         contact: shopData.contact,
         instagram: shopData.contact.instagram,
@@ -677,6 +680,21 @@ export default function ShopEditorPage() {
               setShopData({ ...shopData, location: e.target.value })
             }
           />
+        </div>
+
+        {/* Delivery */}
+        <div>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={shopData.hasDelivery}
+              onChange={(e) =>
+                setShopData({ ...shopData, hasDelivery: e.target.checked })
+              }
+              className="w-4 h-4"
+            />
+            <span className="font-medium">Delivery available</span>
+          </label>
         </div>
       </div>
 

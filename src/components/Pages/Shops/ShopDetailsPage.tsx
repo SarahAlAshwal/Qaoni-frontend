@@ -16,8 +16,9 @@ interface ShopDetails {
   slug: string;
   description: string;
   categories: string[];
-  heroImage?: { url: string };
-  logo?: { url: string };
+  hasDelivery?: boolean;
+  heroImage?: { url: string } | string;
+  logo?: { url: string } | string;
   gallery?: ShopImage[];
   contact?: {
     phone?: string;
@@ -97,8 +98,8 @@ export default function ShopDetailsPage() {
   const gallery = Array.isArray(shop.gallery) ? shop.gallery.filter((item) => item?.url) : [];
   const featuredProducts = gallery.filter((item) => item.featured);
   const displayedProducts = gallery.slice(0, 12);
-  const heroUrl = shop.heroImage?.url;
-  const logoUrl = shop.logo?.url;
+  const heroUrl = typeof shop.heroImage === "string" ? shop.heroImage : shop.heroImage?.url;
+  const logoUrl = typeof shop.logo === "string" ? shop.logo : shop.logo?.url;
 
   return (
     <div className="flex flex-col">
@@ -109,18 +110,25 @@ export default function ShopDetailsPage() {
             alt={shop.name}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-center text-white px-4">
+          <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-center text-white px-4">
             <h1 className="text-3xl md:text-5xl font-bold mb-3">{shop.name}</h1>
             <div className="flex gap-2 flex-wrap justify-center">
               {shop.categories.map((cat) => (
                 <span
                   key={cat}
-                  className="bg-brand-primary text-white px-3 py-1 rounded-full text-sm"
+                  className="bg-brand-secondary text-white px-3 py-1 rounded-full text-sm"
                 >
                   {cat}
                 </span>
               ))}
             </div>
+            {shop.hasDelivery && (
+              <div className="mt-2">
+                <span className="bg-brand-accent text-white px-3 py-1 rounded-full text-sm">
+                  Deliver
+                </span>
+              </div>
+            )}
           </div>
         </section>
       ) : (
@@ -137,6 +145,13 @@ export default function ShopDetailsPage() {
                 </span>
               ))}
             </div>
+            {shop.hasDelivery && (
+              <div className="mt-2">
+                <span className="bg-brand-accent text-white px-3 py-1 rounded-full text-sm">
+                  Deliver
+                </span>
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -192,7 +207,7 @@ export default function ShopDetailsPage() {
 
       {selectedProduct && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 overflow-auto p-6"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 overflow-auto p-6"
           onClick={() => setSelectedProduct(null)}
         >
           <div
@@ -201,7 +216,7 @@ export default function ShopDetailsPage() {
           >
             <button
               onClick={() => setSelectedProduct(null)}
-              className="fixed top-6 right-6 text-white bg-brand-primary cursor-pointer bg-opacity-50 hover:bg-opacity-80 rounded-full p-3 text-2xl z-[60]"
+              className="fixed top-6 right-6 text-white bg-brand-primary/50 cursor-pointer hover:bg-brand-primary/80 rounded-full p-3 text-2xl z-[60]"
             >
               X
             </button>

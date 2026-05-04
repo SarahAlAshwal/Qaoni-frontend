@@ -13,6 +13,7 @@ interface ShopPreviewProps {
     name: string;
     description: string;
     location: string;
+    hasDelivery?: boolean;
     categories: string[];
     contact: {
       phone: string;
@@ -111,12 +112,19 @@ export default function ShopPreviewPage({
               {data.categories.map((cat) => (
                 <span
                   key={cat}
-                  className="bg-brand-primary text-white px-3 py-1 rounded-full text-sm"
+                  className="bg-brand-secondary text-white px-3 py-1 rounded-full text-sm"
                 >
                   {cat}
                 </span>
               ))}
             </div>
+            {data.hasDelivery && (
+              <div className="mt-2">
+                <span className="bg-brand-accent text-white px-3 py-1 rounded-full text-sm">
+                  Deliver
+                </span>
+              </div>
+            )}
           </div>
         </section>
       ) : (
@@ -135,6 +143,13 @@ export default function ShopPreviewPage({
                 </span>
               ))}
             </div>
+            {data.hasDelivery && (
+              <div className="mt-2">
+                <span className="bg-brand-accent text-white px-3 py-1 rounded-full text-sm">
+                  Deliver
+                </span>
+              </div>
+            )}
           </div>
         </section>
       )}
