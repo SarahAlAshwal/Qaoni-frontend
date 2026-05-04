@@ -62,7 +62,7 @@ const Header: FC = () => {
         {/* Hamburger button (mobile only) */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="min-[830px]:hidden text-gray-700 focus:outline-none"
+          className="min-[830px]:hidden text-gray-700 focus:outline-none cursor-pointer"
           aria-label="Toggle menu"
         >
           {isOpen ? (
@@ -111,7 +111,7 @@ const Header: FC = () => {
              {!isAuthenticated ? (
                 <button
                     onClick={() => login()}
-                    className="bg-brand-primary text-white px-4 py-2 rounded-lg shadow hover:bg-brand-secondary transition"
+                    className="bg-brand-primary text-white px-4 py-2 rounded-lg shadow hover:bg-brand-secondary transition cursor-pointer"
                 >
                     Login
                 </button>
@@ -120,7 +120,7 @@ const Header: FC = () => {
               <span className="text-gray-700">{user?.name}</span>
               <button
                 onClick={() => logout()}
-                className="bg-gray-600 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-700 transition"
+                className="bg-gray-600 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-700 transition cursor-pointer"
               >
                 Logout
               </button>

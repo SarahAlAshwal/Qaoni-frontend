@@ -52,7 +52,7 @@ const CategoryCard: FC<CategoryCardProps> = ({
                 View All Shops
             </Link>
             ) : (
-            <button className="mt-3 text-brand-primary font-medium hover:underline">
+            <button className="mt-3 text-brand-primary font-medium hover:underline cursor-pointer">
                 View All Shops
             </button>
             )

@@ -266,14 +266,14 @@ export default function SlidesManager() {
             <button
               onClick={handleDiscard}
               disabled={!hasUnsavedChanges || isSaving}
-              className="rounded-lg bg-gray-200 px-4 py-2 text-sm text-gray-800 disabled:opacity-50"
+              className="rounded-lg bg-gray-200 px-4 py-2 text-sm text-gray-800 disabled:opacity-50 cursor-pointer"
             >
               Discard
             </button>
             <button
               onClick={() => void handleSave()}
               disabled={!hasUnsavedChanges || isSaving}
-              className="rounded-lg bg-brand-primary px-4 py-2 text-sm text-white hover:bg-brand-secondary disabled:opacity-50"
+              className="rounded-lg bg-brand-primary px-4 py-2 text-sm text-white hover:bg-brand-secondary disabled:opacity-50 cursor-pointer"
             >
               Save Changes
             </button>
@@ -296,7 +296,7 @@ export default function SlidesManager() {
 
             <button
               onClick={() => handleDelete(item.id)}
-              className="absolute top-2 right-2 rounded bg-black bg-opacity-50 px-2 py-1 text-sm text-white hover:bg-opacity-70"
+              className="absolute top-2 right-2 rounded bg-black/50 px-2 py-1 text-sm text-white hover:bg-black/70 cursor-pointer"
             >
               X
             </button>

@@ -45,7 +45,7 @@ const SearchBar: FC<SearchBarProps> = ({
         <button
           type="button"
           onClick={clearSearch}
-          className="absolute right-3 text-gray-400 hover:text-gray-600"
+          className="absolute right-3 text-gray-400 hover:text-gray-600 cursor-pointer"
         >
           ✕
         </button>

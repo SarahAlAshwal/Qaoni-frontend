@@ -616,7 +616,7 @@ export default function ShopEditorPage() {
             <button
               onClick={() => setVisibilityModal(isPublished ? "unpublish" : "publish")}
               disabled={isSaving}
-              className={`rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60 ${
+              className={`rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60 cursor-pointer ${
                 isPublished
                   ? "border border-brand-primary bg-white text-brand-primary hover:border-brand-secondary hover:text-brand-secondary"
                   : "bg-brand-primary text-white hover:bg-brand-secondary"
@@ -733,7 +733,7 @@ export default function ShopEditorPage() {
           />
           <button
             onClick={addNewCategory}
-            className="px-4 py-2 bg-black text-white rounded-lg"
+            className="px-4 py-2 bg-black text-white rounded-lg cursor-pointer"
           >
             Add
           </button>
@@ -795,7 +795,7 @@ export default function ShopEditorPage() {
 
               <button
                 onClick={() => removeGalleryItem(i)}
-                className="absolute top-2 right-2 text-white bg-black/60 p-1 px-2 rounded-full"
+                className="absolute top-2 right-2 text-white bg-black/60 p-1 px-2 rounded-full cursor-pointer"
               >
                 ✕
               </button>
@@ -845,7 +845,7 @@ export default function ShopEditorPage() {
       <div className="flex justify-between">
         <button
           onClick={() => setShowPreviewPage(true)}
-          className="px-6 py-2 bg-black text-white rounded-lg"
+          className="px-6 py-2 bg-black text-white rounded-lg cursor-pointer"
         >
           Preview
         </button>
@@ -864,7 +864,7 @@ export default function ShopEditorPage() {
                 setIsEditing(false);
                 setToast("Changes discarded.");
               }}
-              className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg"
+              className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg cursor-pointer"
             >
               Cancel
             </button>
@@ -872,7 +872,7 @@ export default function ShopEditorPage() {
           <button
             onClick={() => void handleSave()}
             disabled={isSaving}
-            className="px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-secondary disabled:opacity-60"
+            className="px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-secondary disabled:opacity-60 cursor-pointer"
           >
             Save Changes
           </button>
@@ -917,7 +917,7 @@ export default function ShopEditorPage() {
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setVisibilityModal(null)}
-                className="rounded-lg bg-gray-200 px-4 py-2 text-sm text-gray-800"
+                className="rounded-lg bg-gray-200 px-4 py-2 text-sm text-gray-800 cursor-pointer"
               >
                 Cancel
               </button>
@@ -927,7 +927,7 @@ export default function ShopEditorPage() {
                   setVisibilityModal(null);
                 }}
                 disabled={isSaving || (visibilityModal === "publish" && !canPublish)}
-                className={`rounded-lg px-4 py-2 text-sm text-white disabled:opacity-60 ${
+                className={`rounded-lg px-4 py-2 text-sm text-white disabled:opacity-60 cursor-pointer ${
                   visibilityModal === "publish" ? "bg-brand-primary hover:bg-brand-secondary" : "bg-gray-800 hover:bg-gray-700"
                 }`}
               >

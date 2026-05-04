@@ -115,7 +115,7 @@ export default function Slideshow({
       <button
         onClick={goToPrev}
         aria-label="Previous slide"
-        className="absolute top-1/2 left-3 sm:left-5 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg hover:shadow-xl p-2 sm:p-3 rounded-full z-20 transition-all duration-200 hover:scale-110"
+        className="absolute top-1/2 left-3 sm:left-5 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg hover:shadow-xl p-2 sm:p-3 rounded-full z-20 transition-all duration-200 hover:scale-110 cursor-pointer"
       >
         <img src={chevronLeft} alt="" className="w-5 h-5 sm:w-6 sm:h-6" />
       </button>
@@ -124,7 +124,7 @@ export default function Slideshow({
       <button
         onClick={goToNext}
         aria-label="Next slide"
-        className="absolute top-1/2 right-3 sm:right-5 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg hover:shadow-xl p-2 sm:p-3 rounded-full z-20 transition-all duration-200 hover:scale-110"
+        className="absolute top-1/2 right-3 sm:right-5 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg hover:shadow-xl p-2 sm:p-3 rounded-full z-20 transition-all duration-200 hover:scale-110 cursor-pointer"
       >
         <img src={chevronRight} alt="" className="w-5 h-5 sm:w-6 sm:h-6" />
       </button>
@@ -136,9 +136,9 @@ export default function Slideshow({
             key={i}
             onClick={() => setCurrentIndex(i)}
             aria-label={`Go to slide ${i + 1}`}
-            className={`transition-all duration-300 rounded-full ${
-              i === currentIndex 
-                ? "bg-white w-8 h-3" 
+            className={`transition-all duration-300 rounded-full cursor-pointer ${
+              i === currentIndex
+                ? "bg-white w-8 h-3"
                 : "bg-white/60 hover:bg-white/80 w-3 h-3"
             }`}
           />

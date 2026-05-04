@@ -22,7 +22,7 @@ export default function ImagePreviewModal({ src, onClose }: ImagePreviewModalPro
           className="max-h-[90vh] max-w-full object-contain rounded-lg shadow-2xl"
         />
         <button
-          className="absolute top-4 right-4 text-white bg-black bg-opacity-60 hover:bg-opacity-80 rounded-full p-2 text-xl"
+          className="absolute top-4 right-4 text-white bg-black/60 hover:bg-black/80 rounded-full p-2 text-xl cursor-pointer"
           onClick={onClose}
         >
           ×

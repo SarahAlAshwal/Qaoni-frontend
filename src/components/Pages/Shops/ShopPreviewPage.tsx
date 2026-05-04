@@ -77,7 +77,7 @@ export default function ShopPreviewPage({
           {statusActionLabel && onStatusAction ? (
             <button
               onClick={onStatusAction}
-              className={`rounded-lg px-3 py-1 text-sm font-medium ${
+              className={`rounded-lg px-3 py-1 text-sm font-medium cursor-pointer ${
                 statusLabel === "Published"
                   ? "border border-brand-primary bg-white text-brand-primary hover:border-brand-secondary hover:text-brand-secondary"
                   : "bg-brand-primary text-white hover:bg-brand-secondary"
@@ -89,7 +89,7 @@ export default function ShopPreviewPage({
         </div>
         <button
           onClick={onClose}
-          className="px-4 py-2 bg-black text-white rounded-lg"
+          className="px-4 py-2 bg-black text-white rounded-lg cursor-pointer"
         >
           {actionLabel}
         </button>
@@ -314,14 +314,14 @@ export default function ShopPreviewPage({
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={onCloseStatusModal}
-                className="rounded-lg bg-gray-200 px-4 py-2 text-sm text-gray-800"
+                className="rounded-lg bg-gray-200 px-4 py-2 text-sm text-gray-800 cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={onConfirmStatusAction}
                 disabled={statusModalDisabled}
-                className="rounded-lg bg-brand-primary px-4 py-2 text-sm text-white hover:bg-brand-secondary disabled:opacity-60"
+                className="rounded-lg bg-brand-primary px-4 py-2 text-sm text-white hover:bg-brand-secondary disabled:opacity-60 cursor-pointer"
               >
                 {statusModalConfirmLabel}
               </button>
