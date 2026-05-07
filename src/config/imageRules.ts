@@ -9,12 +9,7 @@ export const IMAGE_RULES = {
     minWidth: 1600,
     minHeight: 900,
   },
-  "shop-gallery": {
-    maxSizeMB: 5,
-    minWidth: 800,
-    minHeight: 800,
-  },
-  "homepage-slide": {
+"homepage-slide": {
     maxSizeMB: 10,
     minWidth: 1600,
     minHeight: 900,

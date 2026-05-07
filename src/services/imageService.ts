@@ -7,15 +7,11 @@ export interface SaveImageOptions {
   imageType:
     | "shop-logo"
     | "shop-hero"
-    | "gallery"
     | "product"
     | "featured-shop"
     | "homepage-slide";
   extraData?: {
     order?: number;
-    price?: number;
-    description?: string;
-    featured?: boolean;
   };
 }
 
@@ -53,54 +49,5 @@ export async function saveImages(
     throw new Error("Image upload failed");
   }
 
-  return res.json(); // returns saved images
-}
-
-export async function updateShopGalleryImage(
-  shopId: string,
-  publicId: string,
-  updates: {
-    order: number;
-    price?: number;
-    description?: string;
-    featured?: boolean;
-  },
-  getToken?: GetToken
-) {
-  const res = await apiFetch(
-    `/api/images/shops/${shopId}/gallery/${encodeURIComponent(publicId)}`,
-    {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        order: updates.order,
-        price: updates.price ?? null,
-        description: updates.description ?? "",
-        featured: updates.featured ?? false,
-      }),
-    },
-    getToken
-  );
-
-  if (!res.ok) {
-    throw new Error("Gallery image update failed");
-  }
-
   return res.json();
-}
-
-export async function deleteShopGalleryImage(
-  shopId: string,
-  publicId: string,
-  getToken?: GetToken
-) {
-  const res = await apiFetch(
-    `/api/images/shops/${shopId}/gallery/${encodeURIComponent(publicId)}`,
-    { method: "DELETE" },
-    getToken
-  );
-
-  if (!res.ok) {
-    throw new Error("Gallery image delete failed");
-  }
 }
