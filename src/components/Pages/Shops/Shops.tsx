@@ -104,12 +104,12 @@ export default function ShopsPage() {
     const matchesSearch =
       shop.name.toLowerCase().includes(normalizedQuery) ||
       shop.description.toLowerCase().includes(normalizedQuery);
-    const matchescategories =
+    const matchesCategories =
       filters === "" ||
       shop.categories.some(
         (category) => category.toLowerCase().replace(/\s+/g, "-") === filters
       );
-    return matchesSearch && matchescategories;
+    return matchesSearch && matchesCategories;
   });
 
   return (
