@@ -286,8 +286,8 @@ export default function ShopEditorPage() {
             phone: shop.contact?.phone || "",
             email: shop.contact?.email || "",
             address: shop.contact?.address || "",
-            instagram: shop.contact?.instagram || shop.instagram || "",
-            facebook: shop.contact?.facebook || shop.facebook || "",
+            instagram: shop.contact?.instagram || "",
+            facebook: shop.contact?.facebook || "",
           },
         };
 
