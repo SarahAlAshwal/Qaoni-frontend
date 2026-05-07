@@ -37,7 +37,6 @@ export default function SlidesManager() {
 
       return (
         slide.id !== original.id ||
-        slide.order !== original.order ||
         slide.isActive !== original.isActive ||
         slide.url !== original.url ||
         Boolean(slide.file) ||
@@ -54,9 +53,7 @@ export default function SlidesManager() {
         getAccessTokenSilently
       );
 
-      if (!res.ok) {
-        throw new Error("Failed to load slides");
-      }
+      if (!res.ok) throw new Error("Failed to load slides");
 
       const data = await res.json();
       const nextSlides: SlideItem[] = data.map((slide: any) => ({
@@ -85,7 +82,6 @@ export default function SlidesManager() {
 
   useEffect(() => {
     if (!message) return;
-
     const timeout = window.setTimeout(() => setMessage(null), 2500);
     return () => window.clearTimeout(timeout);
   }, [message]);
@@ -104,21 +100,22 @@ export default function SlidesManager() {
     setMessage("Draft slide added. Save to publish changes.");
   };
 
-  const updateOrder = (id: string, newOrder: number) => {
-    const normalizedOrder = Number.isFinite(newOrder) && newOrder > 0 ? newOrder : 1;
+  const moveSlide = (id: string, direction: "up" | "down") => {
+    setSlides((prev) => {
+      const index = prev.findIndex((s) => s.id === id);
+      if (direction === "up" && index === 0) return prev;
+      if (direction === "down" && index === prev.length - 1) return prev;
 
-    setSlides((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, order: normalizedOrder } : item
-      )
-    );
+      const next = [...prev];
+      const swapIndex = direction === "up" ? index - 1 : index + 1;
+      [next[index], next[swapIndex]] = [next[swapIndex], next[index]];
+      return next;
+    });
   };
 
   const toggleSlide = (id: string, isActive: boolean) => {
     setSlides((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, isActive } : item
-      )
+      prev.map((item) => (item.id === id ? { ...item, isActive } : item))
     );
   };
 
@@ -128,7 +125,6 @@ export default function SlidesManager() {
       if (target?.isNew && target.url.startsWith("blob:")) {
         URL.revokeObjectURL(target.url);
       }
-
       return prev.filter((item) => item.id !== id);
     });
 
@@ -159,13 +155,16 @@ export default function SlidesManager() {
           { method: "DELETE" },
           getAccessTokenSilently
         );
-
-        if (!res.ok) {
-          throw new Error("Failed to delete slide");
-        }
+        if (!res.ok) throw new Error("Failed to delete slide");
       }
 
-      for (const slide of slides) {
+      // Assign sequential positions based on current list order
+      const slidesWithOrder = slides.map((slide, index) => ({
+        ...slide,
+        order: index + 1,
+      }));
+
+      for (const slide of slidesWithOrder) {
         if (slide.isNew && slide.file) {
           const createRes = await apiFetch(
             "/api/homepage-slides",
@@ -180,9 +179,7 @@ export default function SlidesManager() {
             getAccessTokenSilently
           );
 
-          if (!createRes.ok) {
-            throw new Error("Failed to create slide");
-          }
+          if (!createRes.ok) throw new Error("Failed to create slide");
 
           const createdSlide = await createRes.json();
 
@@ -212,9 +209,7 @@ export default function SlidesManager() {
           getAccessTokenSilently
         );
 
-        if (!res.ok) {
-          throw new Error("Failed to update slide");
-        }
+        if (!res.ok) throw new Error("Failed to update slide");
       }
 
       await loadSlides();
@@ -234,6 +229,7 @@ export default function SlidesManager() {
           <h2 className="text-xl font-semibold">Homepage Slideshow</h2>
           <p className="text-sm text-gray-600">
             Add draft slides locally, preview them, then save when you are ready to publish.
+            Use the arrows to reorder slides.
           </p>
         </div>
         <ImageUploader
@@ -282,7 +278,7 @@ export default function SlidesManager() {
       )}
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
-        {slides.map((item) => (
+        {slides.map((item, index) => (
           <div
             key={item.id}
             className="relative overflow-hidden rounded-xl bg-white shadow-md"
@@ -315,15 +311,26 @@ export default function SlidesManager() {
                 />
               </label>
 
-              <div>
-                <label className="text-sm text-gray-600">Order</label>
-                <input
-                  type="number"
-                  value={item.order}
-                  min={1}
-                  onChange={(e) => updateOrder(item.id, Number(e.target.value))}
-                  className="ml-2 w-20 rounded border p-1"
-                />
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Position {index + 1}</span>
+                <div className="ml-auto flex gap-1">
+                  <button
+                    onClick={() => moveSlide(item.id, "up")}
+                    disabled={index === 0}
+                    className="rounded border px-2 py-1 text-sm disabled:opacity-30 cursor-pointer hover:bg-gray-100"
+                    title="Move up"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    onClick={() => moveSlide(item.id, "down")}
+                    disabled={index === slides.length - 1}
+                    className="rounded border px-2 py-1 text-sm disabled:opacity-30 cursor-pointer hover:bg-gray-100"
+                    title="Move down"
+                  >
+                    ↓
+                  </button>
+                </div>
               </div>
             </div>
           </div>

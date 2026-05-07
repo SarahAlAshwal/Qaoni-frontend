@@ -26,7 +26,7 @@ interface MediaItem {
   isNew: boolean;
 }
 
-type FeaturedShopsMode = "manual" | "random_daily";
+type FeaturedShopsMode = "default" | "manual" | "random_daily";
 
 const cloneItems = (items: MediaItem[]) =>
   items.map((item) => ({ ...item, file: item.file ?? null }));
@@ -39,9 +39,9 @@ export default function FeaturedShopsManager() {
   const [shops, setShops] = useState<ShopOption[]>([]);
   const [selectedShopId, setSelectedShopId] = useState("");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [featuredMode, setFeaturedMode] = useState<FeaturedShopsMode>("manual");
+  const [featuredMode, setFeaturedMode] = useState<FeaturedShopsMode>("default");
   const [originalFeaturedMode, setOriginalFeaturedMode] =
-    useState<FeaturedShopsMode>("manual");
+    useState<FeaturedShopsMode>("default");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -60,7 +60,6 @@ export default function FeaturedShopsManager() {
         item.shopId !== original.shopId ||
         item.shopName !== original.shopName ||
         item.url !== original.url ||
-        item.order !== original.order ||
         item.isActive !== original.isActive ||
         Boolean(item.file) ||
         item.isNew
@@ -84,17 +83,9 @@ export default function FeaturedShopsManager() {
         apiFetch("/api/homepage-settings", { method: "GET" }),
       ]);
 
-      if (!itemsRes.ok) {
-        throw new Error("Failed to load featured shops");
-      }
-
-      if (!shopsRes.ok) {
-        throw new Error("Failed to load shops");
-      }
-
-      if (!settingsRes.ok) {
-        throw new Error("Failed to load homepage settings");
-      }
+      if (!itemsRes.ok) throw new Error("Failed to load featured shops");
+      if (!shopsRes.ok) throw new Error("Failed to load shops");
+      if (!settingsRes.ok) throw new Error("Failed to load homepage settings");
 
       const itemsData = await itemsRes.json();
       const shopsData = await shopsRes.json();
@@ -136,7 +127,9 @@ export default function FeaturedShopsManager() {
       const nextMode: FeaturedShopsMode =
         settingsData?.featuredShopsMode === "random_daily"
           ? "random_daily"
-          : "manual";
+          : settingsData?.featuredShopsMode === "manual"
+          ? "manual"
+          : "default";
 
       setFeaturedMode(nextMode);
       setOriginalFeaturedMode(nextMode);
@@ -154,7 +147,6 @@ export default function FeaturedShopsManager() {
 
   useEffect(() => {
     if (!message) return;
-
     const timeout = window.setTimeout(() => setMessage(null), 2500);
     return () => window.clearTimeout(timeout);
   }, [message]);
@@ -192,10 +184,7 @@ export default function FeaturedShopsManager() {
 
     const selectedShop = shops.find((shop) => shop.id === selectedShopId);
     const file = files[0];
-
-    if (!file || !selectedShop) {
-      return;
-    }
+    if (!file || !selectedShop) return;
 
     addDraftItem(selectedShop, file);
   };
@@ -207,28 +196,27 @@ export default function FeaturedShopsManager() {
     }
 
     const selectedShop = shops.find((shop) => shop.id === selectedShopId);
-    if (!selectedShop) {
-      return;
-    }
+    if (!selectedShop) return;
 
     addDraftItem(selectedShop, null);
   };
 
-  const updateOrder = (id: string, newOrder: number) => {
-    const normalizedOrder = Number.isFinite(newOrder) && newOrder > 0 ? newOrder : 1;
+  const moveItem = (id: string, direction: "up" | "down") => {
+    setItems((prev) => {
+      const index = prev.findIndex((item) => item.id === id);
+      if (direction === "up" && index === 0) return prev;
+      if (direction === "down" && index === prev.length - 1) return prev;
 
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, order: normalizedOrder } : item
-      )
-    );
+      const next = [...prev];
+      const swapIndex = direction === "up" ? index - 1 : index + 1;
+      [next[index], next[swapIndex]] = [next[swapIndex], next[index]];
+      return next;
+    });
   };
 
   const toggleItem = (id: string, isActive: boolean) => {
     setItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, isActive } : item
-      )
+      prev.map((item) => (item.id === id ? { ...item, isActive } : item))
     );
   };
 
@@ -238,7 +226,6 @@ export default function FeaturedShopsManager() {
       if (target?.isNew && target.url.startsWith("blob:")) {
         URL.revokeObjectURL(target.url);
       }
-
       return prev.filter((item) => item.id !== id);
     });
 
@@ -265,7 +252,7 @@ export default function FeaturedShopsManager() {
     try {
       setIsSaving(true);
 
-      const settingsRes = await apiFetch(
+      await apiFetch(
         "/api/homepage-settings",
         {
           method: "PUT",
@@ -275,34 +262,35 @@ export default function FeaturedShopsManager() {
         getAccessTokenSilently
       );
 
-      if (!settingsRes.ok) {
-        throw new Error("Failed to update featured shop mode");
-      }
-
       for (const id of deletedItemIds) {
         const res = await apiFetch(
           `/api/featured-shops/${id}`,
           { method: "DELETE" },
           getAccessTokenSilently
         );
-
-        if (!res.ok) {
-          throw new Error("Failed to delete featured shop");
-        }
+        if (!res.ok) throw new Error("Failed to delete featured shop");
       }
 
-      for (const item of items) {
+      // In manual mode assign sequential positions based on current list order
+      const itemsToSave =
+        featuredMode === "manual"
+          ? items.map((item, index) => ({ ...item, order: index + 1 }))
+          : items;
+
+      for (const item of itemsToSave) {
         if (item.isNew) {
+          const body: Record<string, unknown> = {
+            shopId: item.shopId,
+            isActive: item.isActive,
+          };
+          if (featuredMode === "manual") body.order = item.order;
+
           const createRes = await apiFetch(
             "/api/featured-shops",
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                shopId: item.shopId,
-                order: item.order,
-                isActive: item.isActive,
-              }),
+              body: JSON.stringify(body),
             },
             getAccessTokenSilently
           );
@@ -333,22 +321,20 @@ export default function FeaturedShopsManager() {
           continue;
         }
 
+        const body: Record<string, unknown> = { isActive: item.isActive };
+        if (featuredMode === "manual") body.order = item.order;
+
         const res = await apiFetch(
           `/api/featured-shops/${item.id}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              order: item.order,
-              isActive: item.isActive,
-            }),
+            body: JSON.stringify(body),
           },
           getAccessTokenSilently
         );
 
-        if (!res.ok) {
-          throw new Error("Failed to update featured shop");
-        }
+        if (!res.ok) throw new Error("Failed to update featured shop");
       }
 
       await loadData();
@@ -438,11 +424,17 @@ export default function FeaturedShopsManager() {
 
       <div className="mb-6 rounded-xl bg-white p-4 shadow-sm">
         <p className="font-medium text-gray-900">Display mode</p>
-        <p className="mt-1 text-sm text-gray-600">
-          Manual uses the order values below. Daily Random keeps the same shuffled order for a full day, then rotates again the next day.
-        </p>
         <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-          <label className="flex items-center gap-2 text-sm text-gray-700">
+          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+            <input
+              type="radio"
+              name="featured-mode"
+              checked={featuredMode === "default"}
+              onChange={() => setFeaturedMode("default")}
+            />
+            Default (creation date)
+          </label>
+          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
             <input
               type="radio"
               name="featured-mode"
@@ -451,7 +443,7 @@ export default function FeaturedShopsManager() {
             />
             Manual order
           </label>
-          <label className="flex items-center gap-2 text-sm text-gray-700">
+          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
             <input
               type="radio"
               name="featured-mode"
@@ -461,6 +453,11 @@ export default function FeaturedShopsManager() {
             Daily random
           </label>
         </div>
+        <p className="mt-2 text-xs text-gray-500">
+          {featuredMode === "default" && "Shops appear in the order they were featured, oldest first."}
+          {featuredMode === "manual" && "Use the arrows on each card to set the display order."}
+          {featuredMode === "random_daily" && "Order is shuffled once per day and stays the same until the next day."}
+        </p>
       </div>
 
       {!isLoading && items.length === 0 ? (
@@ -486,7 +483,7 @@ export default function FeaturedShopsManager() {
       ) : null}
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
-        {items.map((item) => (
+        {items.map((item, index) => (
           <div
             key={item.id}
             className="relative overflow-hidden rounded-xl bg-white shadow-md"
@@ -510,9 +507,7 @@ export default function FeaturedShopsManager() {
                 <p className="text-xs font-medium text-amber-700">Draft featured shop</p>
               ) : null}
 
-              <div>
-                <p className="font-medium text-gray-900">{item.shopName}</p>
-              </div>
+              <p className="font-medium text-gray-900">{item.shopName}</p>
 
               <label className="flex items-center justify-between text-sm text-gray-700">
                 <span>Active</span>
@@ -523,17 +518,29 @@ export default function FeaturedShopsManager() {
                 />
               </label>
 
-              <div>
-                <label className="text-sm text-gray-600">Order</label>
-                <input
-                  type="number"
-                  value={item.order}
-                  min={1}
-                  onChange={(e) => updateOrder(item.id, Number(e.target.value))}
-                  className="ml-2 w-20 rounded border p-1"
-                  disabled={featuredMode !== "manual"}
-                />
-              </div>
+              {featuredMode === "manual" && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">Position {index + 1}</span>
+                  <div className="ml-auto flex gap-1">
+                    <button
+                      onClick={() => moveItem(item.id, "up")}
+                      disabled={index === 0}
+                      className="rounded border px-2 py-1 text-sm disabled:opacity-30 cursor-pointer hover:bg-gray-100"
+                      title="Move up"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      onClick={() => moveItem(item.id, "down")}
+                      disabled={index === items.length - 1}
+                      className="rounded border px-2 py-1 text-sm disabled:opacity-30 cursor-pointer hover:bg-gray-100"
+                      title="Move down"
+                    >
+                      ↓
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         ))}
