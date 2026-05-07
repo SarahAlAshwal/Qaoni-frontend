@@ -1,24 +1,27 @@
-// src/components/Pages/ShopOwner/ShopEditorPage.tsx
 import { useEffect, useMemo, useState } from "react";
-import {
-  deleteShopGalleryImage,
-  saveImages,
-  updateShopGalleryImage,
-} from "../../../services/imageService";
+import { saveImages } from "../../../services/imageService";
 import { apiFetch } from "../../../services/api";
 import { useAuth } from "../../../hooks/useAuth";
 import ImageUploader from "../../Shared/ImageUploader";
 import ImagePreviewModal from "../../Shared/ImagePreviewModal";
 import ShopPreviewPage from "./ShopPreviewPage";
 
-interface GalleryImage {
-  url: string;
-  publicId?: string;
-  file: File | null;
-  price?: string;
+interface EditorProduct {
+  _id: string;
+  name: string;
   description?: string;
-  featured?: boolean;
-  order?: number;
+  price?: number;
+  isFeatured: boolean;
+  images: { url: string; publicId: string }[];
+}
+
+interface ProductDraft {
+  name: string;
+  price: string;
+  description: string;
+  isFeatured: boolean;
+  files: File[];
+  previews: string[];
 }
 
 interface CategoryOption {
@@ -26,15 +29,20 @@ interface CategoryOption {
   slug: string;
 }
 
+const emptyDraft = (): ProductDraft => ({
+  name: "",
+  price: "",
+  description: "",
+  isFeatured: false,
+  files: [],
+  previews: [],
+});
+
 const dedupeCategories = (categories: string[]) => {
   const seen = new Set<string>();
-
   return categories.filter((category) => {
     const normalized = category.trim().toLowerCase();
-    if (!normalized || seen.has(normalized)) {
-      return false;
-    }
-
+    if (!normalized || seen.has(normalized)) return false;
     seen.add(normalized);
     return true;
   });
@@ -42,6 +50,7 @@ const dedupeCategories = (categories: string[]) => {
 
 export default function ShopEditorPage() {
   const { getAccessTokenSilently } = useAuth();
+
   const [shopData, setShopData] = useState({
     name: "",
     description: "",
@@ -64,7 +73,13 @@ export default function ShopEditorPage() {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [hero, setHero] = useState<string | null>(null);
   const [heroFile, setHeroFile] = useState<File | null>(null);
-  const [gallery, setGallery] = useState<GalleryImage[]>([]);
+  const [products, setProducts] = useState<EditorProduct[]>([]);
+  const [newDraft, setNewDraft] = useState<ProductDraft>(emptyDraft());
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editDraft, setEditDraft] = useState<ProductDraft>(emptyDraft());
+  const [isProductSaving, setIsProductSaving] = useState(false);
+  const [productImageIndex, setProductImageIndex] = useState<Record<string, number>>({});
+
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
   const [showPreviewPage, setShowPreviewPage] = useState(false);
   const [shopId, setShopId] = useState<string | null>(null);
@@ -74,16 +89,16 @@ export default function ShopEditorPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
-  const [deletedGalleryPublicIds, setDeletedGalleryPublicIds] = useState<string[]>([]);
+
   const [originalShop, setOriginalShop] = useState<{
     data: typeof shopData;
     logo: string | null;
     hero: string | null;
-    gallery: GalleryImage[];
     isPublished: boolean;
   } | null>(null);
 
-  // Upload handlers
+  // --- Upload handlers ---
+
   const handleLogoUpload = (files: File[]) => {
     setLogoFile(files[0]);
     setLogo(URL.createObjectURL(files[0]));
@@ -94,45 +109,8 @@ export default function ShopEditorPage() {
     setHero(URL.createObjectURL(files[0]));
   };
 
-  const handleGalleryUpload = (files: File[]) => {
-    const newImages = files.map((file) => ({
-      url: URL.createObjectURL(file),
-      publicId: undefined,
-      file,
-      price: "",
-      description: "",
-      featured: false,
-      order: gallery.length,
-    }));
+  // --- Category handling ---
 
-    setGallery((prev) => [...prev, ...newImages]);
-  };
-
-  const removeGalleryItem = (index: number) => {
-    setGallery((prev) => {
-      const imageToRemove = prev[index];
-      if (imageToRemove?.publicId) {
-        setDeletedGalleryPublicIds((current) => [
-          ...current,
-          imageToRemove.publicId as string,
-        ]);
-      }
-
-      return prev.filter((_, i) => i !== index);
-    });
-  };
-
-  const updateGalleryField = (
-    index: number,
-    field: keyof GalleryImage,
-    value: string | boolean
-  ) => {
-    const updated = [...gallery];
-    (updated[index] as any)[field] = value;
-    setGallery(updated);
-  };
-
-  // Category handling
   const toggleCategory = (cat: string) => {
     setShopData((prev) => {
       const exists = prev.categories.includes(cat);
@@ -161,9 +139,7 @@ export default function ShopEditorPage() {
           getAccessTokenSilently
         );
 
-        if (!res.ok) {
-          throw new Error("Failed to create category");
-        }
+        if (!res.ok) throw new Error("Failed to create category");
 
         const category = await res.json();
         const categoryName =
@@ -174,15 +150,13 @@ export default function ShopEditorPage() {
           const exists = next.some(
             (item) => item.slug.toLowerCase() === String(category?.slug || "").toLowerCase()
           );
-
           if (!exists) {
             next.push({
               name: categoryName,
               slug: category?.slug || categoryName.toLowerCase(),
             });
           }
-
-          return next.sort((left, right) => left.name.localeCompare(right.name));
+          return next.sort((a, b) => a.name.localeCompare(b.name));
         });
 
         setShopData((prev) => ({
@@ -200,12 +174,162 @@ export default function ShopEditorPage() {
   const updateContactField = (field: string, value: string) => {
     setShopData({
       ...shopData,
-      contact: {
-        ...shopData.contact,
-        [field]: value,
-      },
+      contact: { ...shopData.contact, [field]: value },
     });
   };
+
+  // --- Product handlers ---
+
+  const loadProducts = async (sid: string) => {
+    try {
+      const res = await apiFetch(`/api/products/shop/${sid}`, { method: "GET" });
+      if (res.ok) setProducts(await res.json());
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleAddProduct = async () => {
+    const name = newDraft.name.trim();
+    if (!name || !shopId) return;
+
+    try {
+      setIsProductSaving(true);
+      const price = newDraft.price.trim() !== "" ? Number(newDraft.price) : undefined;
+
+      const res = await apiFetch(
+        "/api/products",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            shopId,
+            name,
+            description: newDraft.description || undefined,
+            price: Number.isFinite(price) ? price : undefined,
+            isFeatured: newDraft.isFeatured,
+          }),
+        },
+        getAccessTokenSilently
+      );
+
+      if (!res.ok) throw new Error("Failed to create product");
+
+      const created: EditorProduct = await res.json();
+
+      if (newDraft.files.length > 0) {
+        await saveImages(
+          {
+            files: newDraft.files,
+            entityType: "product",
+            entityId: created._id,
+            imageType: "product",
+          },
+          getAccessTokenSilently
+        );
+      }
+
+      await loadProducts(shopId);
+      setNewDraft(emptyDraft());
+      setToast("Product added.");
+    } catch (error) {
+      console.error(error);
+      setToast("Failed to add product.");
+    } finally {
+      setIsProductSaving(false);
+    }
+  };
+
+  const startEdit = (product: EditorProduct) => {
+    setEditingId(product._id);
+    setEditDraft({
+      name: product.name,
+      price: product.price !== undefined ? String(product.price) : "",
+      description: product.description ?? "",
+      isFeatured: product.isFeatured,
+      files: [],
+      previews: [],
+    });
+  };
+
+  const handleSaveProduct = async () => {
+    if (!editingId || !shopId) return;
+
+    try {
+      setIsProductSaving(true);
+      const price = editDraft.price.trim() !== "" ? Number(editDraft.price) : null;
+
+      await apiFetch(
+        `/api/products/${editingId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: editDraft.name.trim(),
+            description: editDraft.description || undefined,
+            price: Number.isFinite(price) ? price : null,
+            isFeatured: editDraft.isFeatured,
+          }),
+        },
+        getAccessTokenSilently
+      );
+
+      if (editDraft.files.length > 0) {
+        await saveImages(
+          {
+            files: editDraft.files,
+            entityType: "product",
+            entityId: editingId,
+            imageType: "product",
+          },
+          getAccessTokenSilently
+        );
+      }
+
+      await loadProducts(shopId);
+      setEditingId(null);
+      setEditDraft(emptyDraft());
+      setToast("Product updated.");
+    } catch (error) {
+      console.error(error);
+      setToast("Failed to update product.");
+    } finally {
+      setIsProductSaving(false);
+    }
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (!shopId) return;
+    try {
+      await apiFetch(
+        `/api/products/${productId}`,
+        { method: "DELETE" },
+        getAccessTokenSilently
+      );
+      await loadProducts(shopId);
+      setToast("Product deleted.");
+    } catch (error) {
+      console.error(error);
+      setToast("Failed to delete product.");
+    }
+  };
+
+  const handleDeleteProductImage = async (productId: string, publicId: string) => {
+    if (!shopId) return;
+    try {
+      await apiFetch(
+        `/api/products/${productId}/images/${encodeURIComponent(publicId)}`,
+        { method: "DELETE" },
+        getAccessTokenSilently
+      );
+      await loadProducts(shopId);
+    } catch (error) {
+      console.error(error);
+      setToast("Failed to delete image.");
+    }
+  };
+
+  // --- Data loading ---
 
   useEffect(() => {
     let isMounted = true;
@@ -213,9 +337,7 @@ export default function ShopEditorPage() {
     const loadCategories = async () => {
       try {
         const res = await apiFetch("/api/categories", { method: "GET" });
-        if (!res.ok) {
-          throw new Error("Failed to fetch categories");
-        }
+        if (!res.ok) throw new Error("Failed to fetch categories");
 
         const categories = await res.json();
         if (!isMounted) return;
@@ -224,40 +346,26 @@ export default function ShopEditorPage() {
           Array.isArray(categories)
             ? categories
                 .filter(
-                  (category: any) =>
-                    typeof category?.name === "string" &&
-                    typeof category?.slug === "string"
+                  (c: any) => typeof c?.name === "string" && typeof c?.slug === "string"
                 )
-                .map((category: any) => ({
-                  name: category.name,
-                  slug: category.slug,
-                }))
+                .map((c: any) => ({ name: c.name, slug: c.slug }))
             : []
         );
       } catch (error) {
         console.error(error);
-        if (isMounted) {
-          setToast("Failed to load categories.");
-        }
+        if (isMounted) setToast("Failed to load categories.");
       } finally {
-        if (isMounted) {
-          setIsCategoriesLoading(false);
-        }
+        if (isMounted) setIsCategoriesLoading(false);
       }
     };
 
     const loadShop = async () => {
       try {
-        const res = await apiFetch(
-          "/api/shops/me",
-          { method: "GET" },
-          getAccessTokenSilently
-        );
+        const res = await apiFetch("/api/shops/me", { method: "GET" }, getAccessTokenSilently);
 
         if (!res.ok) {
           if (res.status === 404) {
-            if (isMounted) setIsEditing(true);
-            if (isMounted) setOriginalShop(null);
+            if (isMounted) { setIsEditing(true); setOriginalShop(null); }
             return;
           }
           throw new Error("Failed to fetch shop");
@@ -269,6 +377,7 @@ export default function ShopEditorPage() {
         setShopId(shop._id);
         setIsEditing(false);
         setIsPublished(Boolean(shop.isPublished));
+
         const nextShopData = {
           ...shopData,
           name: shop.name || "",
@@ -277,9 +386,7 @@ export default function ShopEditorPage() {
           hasDelivery: Boolean(shop.hasDelivery),
           categories: Array.isArray(shop.categories)
             ? dedupeCategories(
-                shop.categories.filter(
-                  (value: unknown): value is string => typeof value === "string"
-                )
+                shop.categories.filter((v: unknown): v is string => typeof v === "string")
               )
             : [],
           contact: {
@@ -293,38 +400,20 @@ export default function ShopEditorPage() {
 
         setShopData(nextShopData);
 
-        const logoUrl =
-          typeof shop.logo === "string" ? shop.logo : shop.logo?.url;
-        const heroUrl =
-          typeof shop.heroImage === "string"
-            ? shop.heroImage
-            : shop.heroImage?.url;
+        const logoUrl = typeof shop.logo === "string" ? shop.logo : shop.logo?.url;
+        const heroUrl = typeof shop.heroImage === "string" ? shop.heroImage : shop.heroImage?.url;
 
         if (logoUrl) setLogo(logoUrl);
         if (heroUrl) setHero(heroUrl);
-
-        const loadedGallery = Array.isArray(shop.gallery)
-          ? shop.gallery.map((img: any) => ({
-              url: img.url,
-              publicId: img.publicId,
-              file: null,
-              price: img.price ? String(img.price) : "",
-              description: img.description || "",
-              featured: Boolean(img.featured),
-              order: img.order ?? 0,
-            }))
-          : [];
-
-        setGallery(loadedGallery);
-        setDeletedGalleryPublicIds([]);
 
         setOriginalShop({
           data: nextShopData,
           logo: logoUrl || null,
           hero: heroUrl || null,
-          gallery: loadedGallery,
           isPublished: Boolean(shop.isPublished),
         });
+
+        await loadProducts(shop._id);
       } catch (err) {
         console.error(err);
       } finally {
@@ -335,9 +424,7 @@ export default function ShopEditorPage() {
     loadShop();
     void loadCategories();
 
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, [getAccessTokenSilently]);
 
   useEffect(() => {
@@ -352,19 +439,21 @@ export default function ShopEditorPage() {
       { label: "Description", ok: Boolean(shopData.description.trim()) },
       { label: "At least one category", ok: shopData.categories.length > 0 },
       { label: "Logo", ok: Boolean(logo) },
-      { label: "Hero image or gallery image", ok: Boolean(hero) || gallery.length > 0 },
+      { label: "Hero image", ok: Boolean(hero) },
     ],
-    [gallery.length, hero, logo, shopData.categories.length, shopData.description, shopData.name]
+    [hero, logo, shopData.categories.length, shopData.description, shopData.name]
   );
 
   const canPublish = publishChecks.every((check) => check.ok);
+
+  // --- Shop save ---
 
   const handleSave = async (nextPublished = isPublished) => {
     try {
       setIsSaving(true);
       let nextLogo = logo;
       let nextHero = hero;
-      let nextGallery = gallery;
+
       const payload = {
         name: shopData.name,
         description: shopData.description,
@@ -372,8 +461,6 @@ export default function ShopEditorPage() {
         hasDelivery: shopData.hasDelivery,
         categories: shopData.categories,
         contact: shopData.contact,
-        instagram: shopData.contact.instagram,
-        facebook: shopData.contact.facebook,
         isPublished: nextPublished,
       };
 
@@ -387,9 +474,7 @@ export default function ShopEditorPage() {
         getAccessTokenSilently
       );
 
-      if (!res.ok) {
-        throw new Error("Failed to save shop");
-      }
+      if (!res.ok) throw new Error("Failed to save shop");
 
       const savedShop = await res.json();
       const currentShopId = savedShop._id || shopId;
@@ -397,133 +482,40 @@ export default function ShopEditorPage() {
 
       if (logoFile) {
         const uploaded = await saveImages(
-          {
-            files: [logoFile],
-            entityType: "shop",
-            entityId: currentShopId,
-            imageType: "shop-logo",
-          },
+          { files: [logoFile], entityType: "shop", entityId: currentShopId, imageType: "shop-logo" },
           getAccessTokenSilently
         );
         const uploadedUrl = uploaded?.[0]?.url;
-        if (uploadedUrl) {
-          nextLogo = uploadedUrl;
-          setLogo(uploadedUrl);
-        }
+        if (uploadedUrl) { nextLogo = uploadedUrl; setLogo(uploadedUrl); }
         setLogoFile(null);
       }
 
       if (heroFile) {
         const uploaded = await saveImages(
-          {
-            files: [heroFile],
-            entityType: "shop",
-            entityId: currentShopId,
-            imageType: "shop-hero",
-          },
+          { files: [heroFile], entityType: "shop", entityId: currentShopId, imageType: "shop-hero" },
           getAccessTokenSilently
         );
         const uploadedUrl = uploaded?.[0]?.url;
-        if (uploadedUrl) {
-          nextHero = uploadedUrl;
-          setHero(uploadedUrl);
-        }
+        if (uploadedUrl) { nextHero = uploadedUrl; setHero(uploadedUrl); }
         setHeroFile(null);
       }
 
-      for (let i = 0; i < gallery.length; i += 1) {
-        const item = gallery[i];
-        const priceValue =
-          item.price && item.price.trim() !== ""
-            ? Number(item.price)
-            : undefined;
-
-        if (item.file) {
-          await saveImages(
-            {
-              files: [item.file],
-              entityType: "shop",
-              entityId: currentShopId,
-              imageType: "gallery",
-              extraData: {
-                order: i,
-                price: Number.isFinite(priceValue) ? priceValue : undefined,
-                description: item.description,
-                featured: item.featured,
-              },
-            },
-            getAccessTokenSilently
-          );
-          continue;
-        }
-
-        if (item.publicId) {
-          await updateShopGalleryImage(
-            currentShopId,
-            item.publicId,
-            {
-              order: i,
-              price: Number.isFinite(priceValue) ? priceValue : undefined,
-              description: item.description,
-              featured: item.featured,
-            },
-            getAccessTokenSilently
-          );
-        }
-      }
-
-      for (const publicId of deletedGalleryPublicIds) {
-        await deleteShopGalleryImage(
-          currentShopId,
-          publicId,
-          getAccessTokenSilently
-        );
-      }
-
-      const refreshedShopRes = await apiFetch(
-        "/api/shops/me",
-        { method: "GET" },
-        getAccessTokenSilently
-      );
-
-      if (!refreshedShopRes.ok) {
-        throw new Error("Failed to refresh shop");
-      }
+      const refreshedShopRes = await apiFetch("/api/shops/me", { method: "GET" }, getAccessTokenSilently);
+      if (!refreshedShopRes.ok) throw new Error("Failed to refresh shop");
 
       const refreshedShop = await refreshedShopRes.json();
-      const refreshedLogo =
-        typeof refreshedShop.logo === "string"
-          ? refreshedShop.logo
-          : refreshedShop.logo?.url;
-      const refreshedHero =
-        typeof refreshedShop.heroImage === "string"
-          ? refreshedShop.heroImage
-          : refreshedShop.heroImage?.url;
-      const refreshedGallery = Array.isArray(refreshedShop.gallery)
-        ? refreshedShop.gallery.map((img: any) => ({
-            url: img.url,
-            publicId: img.publicId,
-            file: null,
-            price: img.price ? String(img.price) : "",
-            description: img.description || "",
-            featured: Boolean(img.featured),
-            order: img.order ?? 0,
-          }))
-        : [];
+      const refreshedLogo = typeof refreshedShop.logo === "string" ? refreshedShop.logo : refreshedShop.logo?.url;
+      const refreshedHero = typeof refreshedShop.heroImage === "string" ? refreshedShop.heroImage : refreshedShop.heroImage?.url;
 
       nextLogo = refreshedLogo || nextLogo;
       nextHero = refreshedHero || nextHero;
-      nextGallery = refreshedGallery;
       setLogo(nextLogo);
       setHero(nextHero);
-      setGallery(refreshedGallery);
       setIsPublished(Boolean(refreshedShop.isPublished));
-      setDeletedGalleryPublicIds([]);
       setOriginalShop({
         data: shopData,
         logo: nextLogo,
         hero: nextHero,
-        gallery: nextGallery,
         isPublished: Boolean(refreshedShop.isPublished),
       });
       setIsEditing(false);
@@ -535,6 +527,8 @@ export default function ShopEditorPage() {
       setIsSaving(false);
     }
   };
+
+  // --- Render ---
 
   if (isLoading) {
     return (
@@ -550,7 +544,7 @@ export default function ShopEditorPage() {
         data={shopData}
         logo={logo}
         hero={hero}
-        gallery={gallery}
+        products={products}
         statusLabel={isPublished ? "Published" : "Draft"}
         onClose={() => setShowPreviewPage(false)}
       />
@@ -563,28 +557,20 @@ export default function ShopEditorPage() {
         data={shopData}
         logo={logo}
         hero={hero}
-        gallery={gallery}
+        products={products}
         statusLabel={isPublished ? "Published" : "Draft"}
         statusActionLabel={isPublished ? "Unpublish" : "Publish"}
-        onStatusAction={() =>
-          setVisibilityModal(isPublished ? "unpublish" : "publish")
-        }
+        onStatusAction={() => setVisibilityModal(isPublished ? "unpublish" : "publish")}
         statusModalOpen={Boolean(visibilityModal)}
-        statusModalTitle={
-          visibilityModal === "publish" ? "Publish shop?" : "Unpublish shop?"
-        }
+        statusModalTitle={visibilityModal === "publish" ? "Publish shop?" : "Unpublish shop?"}
         statusModalDescription={
           visibilityModal === "publish"
             ? "Publishing makes your shop visible on the public site and allows it to qualify for featured placement."
             : "Unpublishing removes your shop from public pages and featured-shop eligibility."
         }
         statusChecklist={visibilityModal === "publish" ? publishChecks : undefined}
-        statusModalDisabled={
-          isSaving || (visibilityModal === "publish" && !canPublish)
-        }
-        statusModalConfirmLabel={
-          visibilityModal === "publish" ? "Confirm Publish" : "Confirm Unpublish"
-        }
+        statusModalDisabled={isSaving || (visibilityModal === "publish" && !canPublish)}
+        statusModalConfirmLabel={visibilityModal === "publish" ? "Confirm Publish" : "Confirm Unpublish"}
         onCloseStatusModal={() => setVisibilityModal(null)}
         onConfirmStatusAction={() => {
           void handleSave(visibilityModal === "publish");
@@ -601,13 +587,12 @@ export default function ShopEditorPage() {
     <div className="max-w-4xl mx-auto p-8 space-y-10">
       <h1 className="text-2xl font-bold">Manage Your Shop</h1>
 
+      {/* Visibility */}
       <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm text-gray-500">Visibility</p>
-            <p className="text-base font-medium text-gray-900">
-              {isPublished ? "Published" : "Draft"}
-            </p>
+            <p className="text-base font-medium text-gray-900">{isPublished ? "Published" : "Draft"}</p>
           </div>
           <div className="flex flex-col items-start gap-3 sm:items-end">
             <p className="text-sm text-gray-600">
@@ -628,18 +613,12 @@ export default function ShopEditorPage() {
         </div>
       </div>
 
-      {/* LOGO Upload */}
+      {/* Logo */}
       <div className="bg-white p-6 rounded-xl shadow-md space-y-3">
         <h2 className="font-semibold">Logo</h2>
-
-        <ImageUploader multiple= {false} label="Upload Logo" onUpload={handleLogoUpload} />
-
+        <ImageUploader multiple={false} label="Upload Logo" onUpload={handleLogoUpload} />
         {logo && (
-          <img
-            src={logo}
-            onClick={() => setPreviewSrc(logo)}
-            className="w-32 rounded-lg mt-3 cursor-pointer"
-          />
+          <img src={logo} onClick={() => setPreviewSrc(logo)} className="w-32 rounded-lg mt-3 cursor-pointer" />
         )}
       </div>
 
@@ -651,46 +630,33 @@ export default function ShopEditorPage() {
             type="text"
             className="w-full border rounded-lg p-2"
             value={shopData.name}
-            onChange={(e) =>
-              setShopData({ ...shopData, name: e.target.value })
-            }
+            onChange={(e) => setShopData({ ...shopData, name: e.target.value })}
           />
         </div>
-
         <div>
           <label className="block font-medium">Description</label>
           <textarea
             rows={3}
             className="w-full border rounded-lg p-2"
             value={shopData.description}
-            onChange={(e) =>
-              setShopData({ ...shopData, description: e.target.value })
-            }
+            onChange={(e) => setShopData({ ...shopData, description: e.target.value })}
           />
         </div>
-
-        {/* Location */}
         <div>
           <label className="block font-medium">Location</label>
           <input
             type="text"
             className="w-full border rounded-lg p-2"
             value={shopData.location}
-            onChange={(e) =>
-              setShopData({ ...shopData, location: e.target.value })
-            }
+            onChange={(e) => setShopData({ ...shopData, location: e.target.value })}
           />
         </div>
-
-        {/* Delivery */}
         <div>
           <label className="flex items-center gap-3 cursor-pointer">
             <input
               type="checkbox"
               checked={shopData.hasDelivery}
-              onChange={(e) =>
-                setShopData({ ...shopData, hasDelivery: e.target.checked })
-              }
+              onChange={(e) => setShopData({ ...shopData, hasDelivery: e.target.checked })}
               className="w-4 h-4"
             />
             <span className="font-medium">Delivery available</span>
@@ -701,10 +667,9 @@ export default function ShopEditorPage() {
       {/* Categories */}
       <div className="bg-white p-6 rounded-xl shadow-md space-y-4">
         <h2 className="font-semibold">Categories</h2>
-
         <div className="flex flex-wrap gap-3">
           {dedupeCategories([
-            ...categoryOptions.map((category) => category.name),
+            ...categoryOptions.map((c) => c.name),
             ...shopData.categories,
           ]).map((cat) => (
             <label key={cat} className="flex items-center gap-2">
@@ -716,25 +681,17 @@ export default function ShopEditorPage() {
               {cat}
             </label>
           ))}
-          {isCategoriesLoading && (
-            <p className="text-sm text-gray-500">Loading categories...</p>
-          )}
+          {isCategoriesLoading && <p className="text-sm text-gray-500">Loading categories...</p>}
         </div>
-
         <div className="flex gap-2 mt-2">
           <input
             type="text"
             placeholder="Add new category"
             className="border p-2 rounded-lg flex-1"
             value={shopData.newCategory}
-            onChange={(e) =>
-              setShopData({ ...shopData, newCategory: e.target.value })
-            }
+            onChange={(e) => setShopData({ ...shopData, newCategory: e.target.value })}
           />
-          <button
-            onClick={addNewCategory}
-            className="px-4 py-2 bg-black text-white rounded-lg cursor-pointer"
-          >
+          <button onClick={addNewCategory} className="px-4 py-2 bg-black text-white rounded-lg cursor-pointer">
             Add
           </button>
         </div>
@@ -743,20 +700,13 @@ export default function ShopEditorPage() {
       {/* Contact */}
       <div className="bg-white p-6 rounded-xl shadow-md space-y-4">
         <h2 className="font-semibold">Contact Information</h2>
-
-        {[
-          ["phone", "Phone Number"],
-          ["email", "Email"],
-          ["address", "Address"],
-          ["instagram", "Instagram"],
-          ["facebook", "Facebook"],
-        ].map(([field, label]) => (
+        {(["phone", "email", "address", "instagram", "facebook"] as const).map((field) => (
           <div key={field}>
-            <label className="block font-medium">{label}</label>
+            <label className="block font-medium capitalize">{field === "phone" ? "Phone Number" : field.charAt(0).toUpperCase() + field.slice(1)}</label>
             <input
               type="text"
               className="w-full border rounded-lg p-2"
-              value={(shopData.contact as any)[field]}
+              value={shopData.contact[field]}
               onChange={(e) => updateContactField(field, e.target.value)}
             />
           </div>
@@ -766,9 +716,7 @@ export default function ShopEditorPage() {
       {/* Hero */}
       <div className="bg-white p-6 rounded-xl shadow-md">
         <h2 className="font-semibold mb-3">Hero Image</h2>
-
         <ImageUploader multiple={false} label="Upload Hero Image" onUpload={handleHeroUpload} />
-
         {hero && (
           <img
             src={hero}
@@ -778,70 +726,253 @@ export default function ShopEditorPage() {
         )}
       </div>
 
-      {/* Gallery */}
-      <div className="bg-white p-6 rounded-xl shadow-md">
-        <h2 className="font-semibold mb-3">Products Gallery</h2>
+      {/* Products */}
+      {shopId && (
+        <div className="bg-white p-6 rounded-xl shadow-md space-y-6">
+          <h2 className="font-semibold">Products</h2>
 
-        <ImageUploader label="Add Images" onUpload={handleGalleryUpload} />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          {gallery.map((img, i) => (
-            <div key={i} className="relative border p-3 rounded-lg bg-gray-50">
-              <img
-                src={img.url}
-                className="w-full h-40 object-cover rounded-md cursor-pointer"
-                onClick={() => setPreviewSrc(img.url)}
+          {/* Add product form */}
+          <div className="rounded-xl border border-dashed border-gray-300 p-4 space-y-3">
+            <p className="text-sm font-medium text-gray-700">Add a product</p>
+            <input
+              type="text"
+              placeholder="Product name *"
+              className="w-full border rounded-lg p-2 text-sm"
+              value={newDraft.name}
+              onChange={(e) => setNewDraft({ ...newDraft, name: e.target.value })}
+            />
+            <div className="flex gap-3">
+              <input
+                type="number"
+                placeholder="Price"
+                className="w-32 border rounded-lg p-2 text-sm"
+                value={newDraft.price}
+                onChange={(e) => setNewDraft({ ...newDraft, price: e.target.value })}
               />
-
-              <button
-                onClick={() => removeGalleryItem(i)}
-                className="absolute top-2 right-2 text-white bg-black/60 p-1 px-2 rounded-full cursor-pointer"
-              >
-                ✕
-              </button>
-
-              <label className="flex items-center gap-2 mt-2">
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={img.featured}
-                  onChange={(e) =>
-                    updateGalleryField(i, "featured", e.target.checked)
-                  }
+                  checked={newDraft.isFeatured}
+                  onChange={(e) => setNewDraft({ ...newDraft, isFeatured: e.target.checked })}
                 />
-                Featured Product
+                Featured
               </label>
-
-              <div className="space-y-2 mt-2">
-                <div>
-                  <label className="text-sm">Price</label>
-                  <input
-                    type="text"
-                    className="w-full border rounded-md p-2"
-                    value={img.price}
-                    onChange={(e) =>
-                      updateGalleryField(i, "price", e.target.value)
-                    }
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm">Description</label>
-                  <textarea
-                    rows={2}
-                    className="w-full border rounded-md p-2"
-                    value={img.description}
-                    onChange={(e) =>
-                      updateGalleryField(i, "description", e.target.value)
-                    }
-                  />
-                </div>
-              </div>
             </div>
-          ))}
-        </div>
-      </div>
+            <textarea
+              rows={2}
+              placeholder="Description"
+              className="w-full border rounded-lg p-2 text-sm"
+              value={newDraft.description}
+              onChange={(e) => setNewDraft({ ...newDraft, description: e.target.value })}
+            />
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <ImageUploader
+                label="Add Images"
+                multiple={true}
+                onUpload={(newFiles) =>
+                  setNewDraft((prev) => ({
+                    ...prev,
+                    files: [...prev.files, ...newFiles],
+                    previews: [...prev.previews, ...newFiles.map((f) => URL.createObjectURL(f))],
+                  }))
+                }
+              />
+              <button
+                onClick={() => void handleAddProduct()}
+                disabled={isProductSaving || !newDraft.name.trim()}
+                className="rounded-lg bg-brand-primary px-4 py-2 text-sm text-white hover:bg-brand-secondary disabled:opacity-50 cursor-pointer"
+              >
+                {isProductSaving ? "Saving..." : "Add Product"}
+              </button>
+            </div>
+            {newDraft.previews.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {newDraft.previews.map((src, i) => (
+                  <img
+                    key={i}
+                    src={src}
+                    onClick={() => setPreviewSrc(src)}
+                    className="w-16 h-16 object-cover rounded-md cursor-pointer border border-gray-200"
+                  />
+                ))}
+              </div>
+            )}
+          </div>
 
-      {/* Buttons */}
+          {/* Product list */}
+          {products.length === 0 ? (
+            <p className="text-sm text-gray-500">No products yet. Add your first product above.</p>
+          ) : (
+            <div className="space-y-4">
+              {products.map((product) => (
+                <div key={product._id} className="rounded-xl border border-gray-200 p-4">
+                  {editingId === product._id ? (
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        className="w-full border rounded-lg p-2 text-sm"
+                        value={editDraft.name}
+                        onChange={(e) => setEditDraft({ ...editDraft, name: e.target.value })}
+                      />
+                      <div className="flex gap-3">
+                        <input
+                          type="number"
+                          placeholder="Price"
+                          className="w-32 border rounded-lg p-2 text-sm"
+                          value={editDraft.price}
+                          onChange={(e) => setEditDraft({ ...editDraft, price: e.target.value })}
+                        />
+                        <label className="flex items-center gap-2 text-sm cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={editDraft.isFeatured}
+                            onChange={(e) => setEditDraft({ ...editDraft, isFeatured: e.target.checked })}
+                          />
+                          Featured
+                        </label>
+                      </div>
+                      <textarea
+                        rows={2}
+                        className="w-full border rounded-lg p-2 text-sm"
+                        value={editDraft.description}
+                        onChange={(e) => setEditDraft({ ...editDraft, description: e.target.value })}
+                      />
+
+                      {/* Existing images */}
+                      {product.images.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {product.images.map((img) => (
+                            <div key={img.publicId} className="relative">
+                              <img src={img.url} className="w-20 h-20 object-cover rounded-md" />
+                              <button
+                                onClick={() => void handleDeleteProductImage(product._id, img.publicId)}
+                                className="absolute -top-1 -right-1 bg-black text-white rounded-full w-5 h-5 text-xs flex items-center justify-center cursor-pointer"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <ImageUploader
+                        label="Add more images"
+                        multiple={true}
+                        onUpload={(newFiles) =>
+                          setEditDraft((prev) => ({
+                            ...prev,
+                            files: [...prev.files, ...newFiles],
+                            previews: [...prev.previews, ...newFiles.map((f) => URL.createObjectURL(f))],
+                          }))
+                        }
+                      />
+                      {editDraft.previews.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {editDraft.previews.map((src, i) => (
+                            <img
+                              key={i}
+                              src={src}
+                              onClick={() => setPreviewSrc(src)}
+                              className="w-16 h-16 object-cover rounded-md cursor-pointer border border-gray-200"
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => void handleSaveProduct()}
+                          disabled={isProductSaving || !editDraft.name.trim()}
+                          className="rounded-lg bg-brand-primary px-3 py-1.5 text-sm text-white hover:bg-brand-secondary disabled:opacity-50 cursor-pointer"
+                        >
+                          {isProductSaving ? "Saving..." : "Save"}
+                        </button>
+                        <button
+                          onClick={() => { setEditingId(null); setEditDraft(emptyDraft()); }}
+                          className="rounded-lg bg-gray-200 px-3 py-1.5 text-sm text-gray-700 cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex gap-4">
+                      {product.images.length > 0 && (
+                        <div className="relative flex-shrink-0 w-20 h-20">
+                          <img
+                            src={product.images[productImageIndex[product._id] ?? 0]?.url}
+                            className="w-20 h-20 object-cover rounded-md cursor-pointer"
+                            onClick={() => setPreviewSrc(product.images[productImageIndex[product._id] ?? 0]?.url)}
+                          />
+                          {product.images.length > 1 && (
+                            <>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setProductImageIndex((prev) => {
+                                    const cur = prev[product._id] ?? 0;
+                                    return { ...prev, [product._id]: (cur - 1 + product.images.length) % product.images.length };
+                                  });
+                                }}
+                                className="absolute left-0 top-1/2 -translate-y-1/2 bg-black/50 text-white text-xs px-1 rounded cursor-pointer leading-none py-1"
+                              >‹</button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setProductImageIndex((prev) => {
+                                    const cur = prev[product._id] ?? 0;
+                                    return { ...prev, [product._id]: (cur + 1) % product.images.length };
+                                  });
+                                }}
+                                className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/50 text-white text-xs px-1 rounded cursor-pointer leading-none py-1"
+                              >›</button>
+                              <span className="absolute bottom-0 left-0 right-0 text-center text-white text-[10px] bg-black/40 rounded-b-md leading-4">
+                                {(productImageIndex[product._id] ?? 0) + 1}/{product.images.length}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="font-medium text-gray-900">{product.name}</p>
+                            {typeof product.price === "number" && (
+                              <p className="text-brand-primary text-sm">${product.price}</p>
+                            )}
+                            {product.isFeatured && (
+                              <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Featured</span>
+                            )}
+                            {product.description && (
+                              <p className="text-gray-600 text-sm mt-1 line-clamp-2">{product.description}</p>
+                            )}
+                          </div>
+                          <div className="flex gap-2 flex-shrink-0">
+                            <button
+                              onClick={() => startEdit(product)}
+                              className="text-sm text-gray-600 hover:text-gray-900 cursor-pointer border rounded px-2 py-1"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => void handleDeleteProduct(product._id)}
+                              className="text-sm text-red-600 hover:text-red-800 cursor-pointer border border-red-200 rounded px-2 py-1"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Action Buttons */}
       <div className="flex justify-between">
         <button
           onClick={() => setShowPreviewPage(true)}
@@ -849,7 +980,6 @@ export default function ShopEditorPage() {
         >
           Preview
         </button>
-
         <div className="flex gap-3">
           {shopId && (
             <button
@@ -858,7 +988,6 @@ export default function ShopEditorPage() {
                   setShopData(originalShop.data);
                   setLogo(originalShop.logo);
                   setHero(originalShop.hero);
-                  setGallery(originalShop.gallery);
                   setIsPublished(originalShop.isPublished);
                 }
                 setIsEditing(false);
@@ -879,8 +1008,8 @@ export default function ShopEditorPage() {
         </div>
       </div>
 
-      {/* Image Preview */}
       <ImagePreviewModal src={previewSrc} onClose={() => setPreviewSrc(null)} />
+
       {visibilityModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
@@ -892,7 +1021,6 @@ export default function ShopEditorPage() {
                 ? "Publishing makes your shop visible on the public site and allows it to qualify for featured placement."
                 : "Unpublishing removes your shop from public pages and featured-shop eligibility."}
             </p>
-
             {visibilityModal === "publish" && (
               <div className="mt-4 rounded-xl bg-gray-50 p-4">
                 <p className="text-sm font-medium text-gray-900">Publish checklist</p>
@@ -907,13 +1035,10 @@ export default function ShopEditorPage() {
                   ))}
                 </div>
                 {!canPublish && (
-                  <p className="mt-3 text-sm text-amber-700">
-                    Finish the missing setup items before publishing.
-                  </p>
+                  <p className="mt-3 text-sm text-amber-700">Finish the missing setup items before publishing.</p>
                 )}
               </div>
             )}
-
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setVisibilityModal(null)}
@@ -937,8 +1062,9 @@ export default function ShopEditorPage() {
           </div>
         </div>
       )}
+
       {toast && (
-        <div className="fixed bottom-6 right-6 bg-black text-white px-4 py-2 rounded-lg shadow-lg">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 rounded-lg bg-black px-5 py-3 text-sm text-white shadow-lg z-50">
           {toast}
         </div>
       )}
