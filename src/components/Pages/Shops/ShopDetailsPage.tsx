@@ -4,14 +4,23 @@ import facebookIcon from "../../../assets/facebook.svg";
 import instagramIcon from "../../../assets/instagram.svg";
 import { apiFetch } from "../../../services/api";
 
-interface ShopImage {
+interface ProductImage {
   url: string;
-  price?: number;
+  publicId: string;
+  order?: number;
+}
+
+interface Product {
+  _id: string;
+  name: string;
   description?: string;
-  featured?: boolean;
+  price?: number;
+  isFeatured: boolean;
+  images: ProductImage[];
 }
 
 interface ShopDetails {
+  _id: string;
   name: string;
   slug: string;
   description: string;
@@ -19,7 +28,6 @@ interface ShopDetails {
   hasDelivery?: boolean;
   heroImage?: { url: string } | string;
   logo?: { url: string } | string;
-  gallery?: ShopImage[];
   contact?: {
     phone?: string;
     email?: string;
@@ -32,14 +40,24 @@ interface ShopDetails {
 export default function ShopDetailsPage() {
   const { slug } = useParams();
   const [shop, setShop] = useState<ShopDetails | null>(null);
-  const [selectedProduct, setSelectedProduct] = useState<ShopImage | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [modalImageIndex, setModalImageIndex] = useState(0);
+  const [productImageIndex, setProductImageIndex] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const stepProductImage = (id: string, total: number, dir: 1 | -1) => {
+    setProductImageIndex((prev) => ({
+      ...prev,
+      [id]: ((prev[id] ?? 0) + dir + total) % total,
+    }));
+  };
 
   useEffect(() => {
     let isMounted = true;
 
-    const loadShop = async () => {
+    const load = async () => {
       if (!slug) {
         setErrorMessage("Shop not found.");
         setIsLoading(false);
@@ -47,36 +65,30 @@ export default function ShopDetailsPage() {
       }
 
       try {
-        const res = await apiFetch(`/api/shops/slug/${slug}`);
-        if (!res.ok) {
-          if (res.status === 404) {
-            throw new Error("Shop not found.");
-          }
-
-          throw new Error("Failed to load shop.");
+        const shopRes = await apiFetch(`/api/shops/slug/${slug}`);
+        if (!shopRes.ok) {
+          throw new Error(shopRes.status === 404 ? "Shop not found." : "Failed to load shop.");
         }
 
-        const data = await res.json();
+        const shopData: ShopDetails = await shopRes.json();
         if (!isMounted) return;
+        setShop(shopData);
 
-        setShop(data);
+        const productsRes = await apiFetch(`/api/products/shop/${shopData._id}`);
+        if (productsRes.ok && isMounted) {
+          setProducts(await productsRes.json());
+        }
       } catch (error) {
-        console.error(error);
         if (isMounted) {
           setErrorMessage(error instanceof Error ? error.message : "Failed to load shop.");
         }
       } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        if (isMounted) setIsLoading(false);
       }
     };
 
-    void loadShop();
-
-    return () => {
-      isMounted = false;
-    };
+    void load();
+    return () => { isMounted = false; };
   }, [slug]);
 
   if (isLoading) {
@@ -95,38 +107,25 @@ export default function ShopDetailsPage() {
     );
   }
 
-  const gallery = Array.isArray(shop.gallery) ? shop.gallery.filter((item) => item?.url) : [];
-  const featuredProducts = gallery.filter((item) => item.featured);
-  const displayedProducts = gallery.slice(0, 12);
   const heroUrl = typeof shop.heroImage === "string" ? shop.heroImage : shop.heroImage?.url;
   const logoUrl = typeof shop.logo === "string" ? shop.logo : shop.logo?.url;
+  const featuredProducts = products.filter((p) => p.isFeatured);
 
   return (
     <div className="flex flex-col">
       {heroUrl ? (
         <section className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden">
-          <img
-            src={heroUrl}
-            alt={shop.name}
-            className="w-full h-full object-cover"
-          />
+          <img src={heroUrl} alt={shop.name} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-center text-white px-4">
             <h1 className="text-3xl md:text-5xl font-bold mb-3">{shop.name}</h1>
             <div className="flex gap-2 flex-wrap justify-center">
               {shop.categories.map((cat) => (
-                <span
-                  key={cat}
-                  className="bg-brand-secondary text-white px-3 py-1 rounded-full text-sm"
-                >
-                  {cat}
-                </span>
+                <span key={cat} className="bg-brand-secondary text-white px-3 py-1 rounded-full text-sm">{cat}</span>
               ))}
             </div>
             {shop.hasDelivery && (
               <div className="mt-2">
-                <span className="bg-brand-accent text-white px-3 py-1 rounded-full text-sm">
-                  Deliver
-                </span>
+                <span className="bg-brand-accent text-white px-3 py-1 rounded-full text-sm">Deliver</span>
               </div>
             )}
           </div>
@@ -137,19 +136,12 @@ export default function ShopDetailsPage() {
             <h1 className="text-3xl md:text-5xl font-bold mb-3">{shop.name}</h1>
             <div className="flex gap-2 flex-wrap justify-center">
               {shop.categories.map((cat) => (
-                <span
-                  key={cat}
-                  className="bg-brand-primary text-white px-3 py-1 rounded-full text-sm"
-                >
-                  {cat}
-                </span>
+                <span key={cat} className="bg-brand-primary text-white px-3 py-1 rounded-full text-sm">{cat}</span>
               ))}
             </div>
             {shop.hasDelivery && (
               <div className="mt-2">
-                <span className="bg-brand-accent text-white px-3 py-1 rounded-full text-sm">
-                  Deliver
-                </span>
+                <span className="bg-brand-accent text-white px-3 py-1 rounded-full text-sm">Deliver</span>
               </div>
             )}
           </div>
@@ -163,11 +155,7 @@ export default function ShopDetailsPage() {
         </div>
         {logoUrl && (
           <div className="flex-shrink-0">
-            <img
-              src={logoUrl}
-              alt={`${shop.name} logo`}
-              className="w-40 h-40 object-contain mx-auto"
-            />
+            <img src={logoUrl} alt={`${shop.name} logo`} className="w-40 h-40 object-contain mx-auto" />
           </div>
         )}
       </section>
@@ -175,35 +163,100 @@ export default function ShopDetailsPage() {
       {featuredProducts.length > 0 && (
         <section className="bg-gray-50 py-10">
           <div className="container mx-auto px-6">
-            <h2 className="text-2xl font-semibold mb-6 text-gray-800">
-              Featured Products
-            </h2>
+            <h2 className="text-2xl font-semibold mb-6 text-gray-800">Featured Products</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {featuredProducts.map((product, index) => (
+              {featuredProducts.map((product) => {
+                const idx = productImageIndex[product._id] ?? 0;
+                return (
                 <div
-                  key={`${product.url}-${index}`}
+                  key={product._id}
                   className="bg-white shadow rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer"
-                  onClick={() => setSelectedProduct(product)}
+                  onClick={() => { setSelectedProduct(product); setModalImageIndex(0); }}
                 >
-                  <img
-                    src={product.url}
-                    alt={product.description || shop.name}
-                    className="w-full h-48 object-cover"
-                  />
+                  {product.images.length > 0 && (
+                    <div className="relative h-48">
+                      <img src={product.images[idx].url} alt={product.name} className="w-full h-48 object-cover" />
+                      {product.images.length > 1 && (
+                        <>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); stepProductImage(product._id, product.images.length, -1); }}
+                            className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 text-white px-2 py-1 rounded cursor-pointer text-lg leading-none"
+                          >‹</button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); stepProductImage(product._id, product.images.length, 1); }}
+                            className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 text-white px-2 py-1 rounded cursor-pointer text-lg leading-none"
+                          >›</button>
+                          <span className="absolute bottom-1 right-2 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">
+                            {idx + 1}/{product.images.length}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  )}
                   <div className="p-4">
-                    {typeof product.price === "number" ? (
+                    <p className="font-semibold text-gray-900">{product.name}</p>
+                    {typeof product.price === "number" && (
                       <p className="text-brand-primary font-medium mt-1">${product.price}</p>
-                    ) : null}
-                    {product.description ? (
-                      <p className="text-gray-700 mt-1">{product.description}</p>
-                    ) : null}
+                    )}
+                    {product.description && (
+                      <p className="text-gray-600 text-sm mt-1 line-clamp-2">{product.description}</p>
+                    )}
                   </div>
                 </div>
-              ))}
+              ); })}
             </div>
           </div>
         </section>
       )}
+
+      <section className="container mx-auto px-6 py-10">
+        <h2 className="text-2xl font-semibold mb-6 text-gray-800">Our Products</h2>
+        {products.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {products.map((product) => {
+              const idx = productImageIndex[product._id] ?? 0;
+              return (
+              <div
+                key={product._id}
+                className="bg-white shadow rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer"
+                onClick={() => { setSelectedProduct(product); setModalImageIndex(0); }}
+              >
+                {product.images.length > 0 && (
+                  <div className="relative h-48">
+                    <img src={product.images[idx].url} alt={product.name} className="w-full h-48 object-cover" />
+                    {product.images.length > 1 && (
+                      <>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); stepProductImage(product._id, product.images.length, -1); }}
+                          className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 text-white px-2 py-1 rounded cursor-pointer text-lg leading-none"
+                        >‹</button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); stepProductImage(product._id, product.images.length, 1); }}
+                          className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 text-white px-2 py-1 rounded cursor-pointer text-lg leading-none"
+                        >›</button>
+                        <span className="absolute bottom-1 right-2 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">
+                          {idx + 1}/{product.images.length}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                )}
+                <div className="p-4">
+                  <p className="font-semibold text-gray-900">{product.name}</p>
+                  {typeof product.price === "number" && (
+                    <p className="text-brand-primary font-medium mt-1">${product.price}</p>
+                  )}
+                  {product.description && (
+                    <p className="text-gray-600 text-sm mt-1 line-clamp-2">{product.description}</p>
+                  )}
+                </div>
+              </div>
+              ); })}
+          </div>
+        ) : (
+          <p className="text-gray-500">No products yet.</p>
+        )}
+      </section>
 
       {selectedProduct && (
         <div
@@ -211,97 +264,69 @@ export default function ShopDetailsPage() {
           onClick={() => setSelectedProduct(null)}
         >
           <div
-            className="relative max-w-5xl w-full mx-auto bg-transparent rounded-xl shadow-2xl overflow-hidden flex flex-col items-center justify-center"
+            className="relative max-w-2xl w-full mx-auto bg-white rounded-xl shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setSelectedProduct(null)}
-              className="fixed top-6 right-6 text-white bg-brand-primary/50 cursor-pointer hover:bg-brand-primary/80 rounded-full p-3 text-2xl z-[60]"
+              className="absolute top-3 right-3 text-gray-600 bg-gray-100 cursor-pointer hover:bg-gray-200 rounded-full p-2 z-10"
             >
-              X
+              ✕
             </button>
-
-            <div className="flex items-center justify-center w-full h-full max-h-[90vh]">
-              <img
-                src={selectedProduct.url}
-                alt={selectedProduct.description || shop.name}
-                className="object-contain max-h-[90vh] max-w-full rounded-lg"
-              />
+            {selectedProduct.images.length > 0 && (
+              <div className="relative bg-gray-50">
+                <img
+                  src={selectedProduct.images[modalImageIndex].url}
+                  alt={selectedProduct.name}
+                  className="w-full max-h-[60vh] object-contain"
+                />
+                {selectedProduct.images.length > 1 && (
+                  <>
+                    <button
+                      onClick={() => setModalImageIndex((i) => (i - 1 + selectedProduct.images.length) % selectedProduct.images.length)}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white px-3 py-2 rounded cursor-pointer text-xl leading-none"
+                    >‹</button>
+                    <button
+                      onClick={() => setModalImageIndex((i) => (i + 1) % selectedProduct.images.length)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white px-3 py-2 rounded cursor-pointer text-xl leading-none"
+                    >›</button>
+                    <span className="absolute bottom-2 right-3 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                      {modalImageIndex + 1}/{selectedProduct.images.length}
+                    </span>
+                  </>
+                )}
+              </div>
+            )}
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-gray-900">{selectedProduct.name}</h2>
+              {typeof selectedProduct.price === "number" && (
+                <p className="text-brand-primary font-semibold text-lg mt-1">${selectedProduct.price}</p>
+              )}
+              {selectedProduct.description && (
+                <p className="text-gray-700 mt-3">{selectedProduct.description}</p>
+              )}
             </div>
-
-            {selectedProduct.description ? (
-              <h2 className="mt-4 text-xl font-semibold text-white text-center">
-                {selectedProduct.description}
-              </h2>
-            ) : null}
           </div>
         </div>
       )}
 
-      <section className="container mx-auto px-6 py-10">
-        <h2 className="text-2xl font-semibold mb-6 text-gray-800">Our Products</h2>
-
-        {displayedProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {displayedProducts.map((product, index) => (
-              <div
-                key={`${product.url}-grid-${index}`}
-                className="bg-white shadow rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer"
-                onClick={() => setSelectedProduct(product)}
-              >
-                <img
-                  src={product.url}
-                  alt={product.description || shop.name}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-4">
-                  {typeof product.price === "number" ? (
-                    <p className="text-brand-primary font-medium mt-1">${product.price}</p>
-                  ) : null}
-                  {product.description ? (
-                    <p className="text-gray-700 mt-1">{product.description}</p>
-                  ) : null}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-500">No products uploaded yet.</p>
-        )}
-      </section>
-
       <section className="bg-gray-100 py-10">
         <div className="container mx-auto px-6 text-center md:text-left">
-          <h2 className="text-2xl font-semibold mb-6 text-gray-800">
-            Contact {shop.name}
-          </h2>
-
+          <h2 className="text-2xl font-semibold mb-6 text-gray-800">Contact {shop.name}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-700">
             <div>
               <p><strong>Phone:</strong> {shop.contact?.phone || "Not provided"}</p>
               <p><strong>Email:</strong> {shop.contact?.email || "Not provided"}</p>
               <p><strong>Address:</strong> {shop.contact?.address || "Not provided"}</p>
             </div>
-
             <div className="flex items-center gap-4 mt-4">
               {shop.contact?.facebook && (
-                <a
-                  href={shop.contact.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800 text-2xl transition"
-                >
+                <a href={shop.contact.facebook} target="_blank" rel="noopener noreferrer">
                   <img className="max-w-[20%]" src={facebookIcon} alt="facebook" />
                 </a>
               )}
-
               {shop.contact?.instagram && (
-                <a
-                  href={shop.contact.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-pink-600 hover:text-pink-800 text-2xl transition"
-                >
+                <a href={shop.contact.instagram} target="_blank" rel="noopener noreferrer">
                   <img className="max-w-[20%]" src={instagramIcon} alt="instagram" />
                 </a>
               )}

@@ -1,11 +1,15 @@
+import { useState } from "react";
 import instagramIcon from '../../../assets/instagram.svg';
 import facebookIcon from '../../../assets/facebook.svg';
+import ImagePreviewModal from "../../Shared/ImagePreviewModal";
 
-interface GalleryImage {
-  url: string;
-  price?: string;
+interface PreviewProduct {
+  _id: string;
+  name: string;
   description?: string;
-  featured?: boolean;
+  price?: number;
+  isFeatured: boolean;
+  images: { url: string }[];
 }
 
 interface ShopPreviewProps {
@@ -25,7 +29,7 @@ interface ShopPreviewProps {
   };
   logo: string | null;
   hero: string | null;
-  gallery: GalleryImage[];
+  products?: PreviewProduct[];
   onClose: () => void;
   modeTitle?: string;
   actionLabel?: string;
@@ -46,7 +50,7 @@ export default function ShopPreviewPage({
   data,
   logo,
   hero,
-  gallery,
+  products = [],
   onClose,
   modeTitle = "Preview Mode",
   actionLabel = "Back to Editor",
@@ -62,6 +66,16 @@ export default function ShopPreviewPage({
   onCloseStatusModal,
   onConfirmStatusAction,
 }: ShopPreviewProps) {
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
+  const [productImageIndex, setProductImageIndex] = useState<Record<string, number>>({});
+
+  const stepImage = (id: string, total: number, dir: 1 | -1) => {
+    setProductImageIndex((prev) => ({
+      ...prev,
+      [id]: ((prev[id] ?? 0) + dir + total) % total,
+    }));
+  };
+
   return (
     <div className="flex flex-col bg-gray-100 min-h-screen">
 
@@ -174,39 +188,51 @@ export default function ShopPreviewPage({
       </section>
 
       {/* Featured Products */}
-      {gallery.some((p) => p.featured) && (
+      {products.some((p) => p.isFeatured) && (
         <section className="bg-gray-50 py-10">
           <div className="container mx-auto px-6">
-            <h2 className="text-2xl font-semibold mb-6 text-gray-800">
-              Featured Products
-            </h2>
-
+            <h2 className="text-2xl font-semibold mb-6 text-gray-800">Featured Products</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {gallery
-                .filter((p) => p.featured)
-                .map((product, i) => (
-                  <div
-                    key={i}
-                    className="bg-white shadow rounded-xl overflow-hidden"
-                  >
-                    <img
-                      src={product.url}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="p-4">
-                      {product.price && (
-                        <p className="text-brand-primary font-medium">
-                          ${product.price}
-                        </p>
-                      )}
-                      {product.description && (
-                        <p className="text-gray-700 mt-1 text-sm">
-                          {product.description}
-                        </p>
+              {products.filter((p) => p.isFeatured).map((product) => {
+                const idx = productImageIndex[product._id] ?? 0;
+                return (
+                <div key={product._id} className="bg-white shadow rounded-xl overflow-hidden">
+                  {product.images.length > 0 && (
+                    <div className="relative h-48">
+                      <img
+                        src={product.images[idx].url}
+                        alt={product.name}
+                        className="w-full h-48 object-cover cursor-pointer"
+                        onClick={() => setPreviewSrc(product.images[idx].url)}
+                      />
+                      {product.images.length > 1 && (
+                        <>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); stepImage(product._id, product.images.length, -1); }}
+                            className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 text-white px-2 py-1 rounded cursor-pointer text-lg leading-none"
+                          >‹</button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); stepImage(product._id, product.images.length, 1); }}
+                            className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 text-white px-2 py-1 rounded cursor-pointer text-lg leading-none"
+                          >›</button>
+                          <span className="absolute bottom-1 right-2 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">
+                            {idx + 1}/{product.images.length}
+                          </span>
+                        </>
                       )}
                     </div>
+                  )}
+                  <div className="p-4">
+                    <p className="font-semibold text-gray-900">{product.name}</p>
+                    {typeof product.price === "number" && (
+                      <p className="text-brand-primary font-medium mt-1">${product.price}</p>
+                    )}
+                    {product.description && (
+                      <p className="text-gray-600 text-sm mt-1 line-clamp-2">{product.description}</p>
+                    )}
                   </div>
-                ))}
+                </div>
+              ); })}
             </div>
           </div>
         </section>
@@ -214,33 +240,51 @@ export default function ShopPreviewPage({
 
       {/* All Products */}
       <section className="container mx-auto px-6 py-10">
-        <h2 className="text-2xl font-semibold mb-6 text-gray-800">
-          Our Products
-        </h2>
-
-        {gallery.length === 0 ? (
-          <p className="text-gray-500">No products uploaded.</p>
+        <h2 className="text-2xl font-semibold mb-6 text-gray-800">Our Products</h2>
+        {products.length === 0 ? (
+          <p className="text-gray-500">No products yet.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {gallery.map((img, i) => (
-              <div
-                key={i}
-                className="bg-white shadow rounded-xl overflow-hidden"
-              >
-                <img
-                  src={img.url}
-                  className="w-full h-48 object-cover"
-                />
+            {products.map((product) => {
+              const idx = productImageIndex[product._id] ?? 0;
+              return (
+              <div key={product._id} className="bg-white shadow rounded-xl overflow-hidden">
+                {product.images.length > 0 && (
+                  <div className="relative h-48">
+                    <img
+                      src={product.images[idx].url}
+                      alt={product.name}
+                      className="w-full h-48 object-cover cursor-pointer"
+                      onClick={() => setPreviewSrc(product.images[idx].url)}
+                    />
+                    {product.images.length > 1 && (
+                      <>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); stepImage(product._id, product.images.length, -1); }}
+                          className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 text-white px-2 py-1 rounded cursor-pointer text-lg leading-none"
+                        >‹</button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); stepImage(product._id, product.images.length, 1); }}
+                          className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 text-white px-2 py-1 rounded cursor-pointer text-lg leading-none"
+                        >›</button>
+                        <span className="absolute bottom-1 right-2 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">
+                          {idx + 1}/{product.images.length}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                )}
                 <div className="p-4">
-                  {img.price && (
-                    <p className="text-brand-primary font-medium">{img.price}</p>
+                  <p className="font-semibold text-gray-900">{product.name}</p>
+                  {typeof product.price === "number" && (
+                    <p className="text-brand-primary font-medium mt-1">${product.price}</p>
                   )}
-                  {img.description && (
-                    <p className="text-gray-700 mt-1">{img.description}</p>
+                  {product.description && (
+                    <p className="text-gray-600 text-sm mt-1 line-clamp-2">{product.description}</p>
                   )}
                 </div>
               </div>
-            ))}
+              ); })}
           </div>
         )}
       </section>
@@ -329,6 +373,8 @@ export default function ShopPreviewPage({
           </div>
         </div>
       ) : null}
+
+      <ImagePreviewModal src={previewSrc} onClose={() => setPreviewSrc(null)} />
     </div>
   );
 }
