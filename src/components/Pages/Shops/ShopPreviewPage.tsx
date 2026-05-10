@@ -1,6 +1,8 @@
 import { useState } from "react";
 import instagramIcon from '../../../assets/instagram.svg';
 import facebookIcon from '../../../assets/facebook.svg';
+import whatsappIcon from '../../../assets/whatsapp.svg';
+import tiktokIcon from '../../../assets/tiktok.svg';
 import ImagePreviewModal from "../../Shared/ImagePreviewModal";
 
 interface PreviewProduct {
@@ -25,6 +27,8 @@ interface ShopPreviewProps {
       address: string;
       instagram?: string;
       facebook?: string;
+      whatsapp?: string;
+      tiktok?: string;
     };
   };
   logo: string | null;
@@ -297,33 +301,35 @@ export default function ShopPreviewPage({
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-700">
-            <div>
-              <p><strong>Phone:</strong> {data.contact.phone}</p>
-              <p><strong>Email:</strong> {data.contact.email}</p>
-              <p><strong>Address:</strong> {data.contact.address}</p>
+            <div className="space-y-1">
+              {data.contact.phone && <p><strong>Phone:</strong> {data.contact.phone}</p>}
+              {data.contact.email && <p><strong>Email:</strong> {data.contact.email}</p>}
+              {data.contact.address && <p><strong>Address:</strong> {data.contact.address}</p>}
+              {!data.contact.phone && !data.contact.email && !data.contact.address && (
+                <p className="text-gray-400 italic">No contact info provided.</p>
+              )}
             </div>
-            <div className="flex items-center gap-4 mt-4">
-            {data.contact?.facebook && (
-                <a
-                href={data.contact?.facebook}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800 text-2xl transition"
-                >
-                <img className="max-w-[20%]" src={facebookIcon} alt="facebook" />
+            <div className="flex items-center gap-4 justify-center md:justify-start">
+              {data.contact?.facebook && (
+                <a href={data.contact.facebook} target="_blank" rel="noopener noreferrer">
+                  <img className="w-8 h-8 object-contain hover:opacity-75 transition" src={facebookIcon} alt="Facebook" />
                 </a>
-            )}
-
-            {data.contact?.instagram && (
-                <a
-                href={data.contact?.instagram}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-pink-600 hover:text-pink-800 text-2xl transition"
-                >
-                <img className="max-w-[20%]" src={instagramIcon} alt="instagram" />
+              )}
+              {data.contact?.instagram && (
+                <a href={data.contact.instagram} target="_blank" rel="noopener noreferrer">
+                  <img className="w-8 h-8 object-contain hover:opacity-75 transition" src={instagramIcon} alt="Instagram" />
                 </a>
-            )}
+              )}
+              {data.contact?.whatsapp && (
+                <a href={`https://wa.me/${data.contact.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">
+                  <img className="w-8 h-8 object-contain hover:opacity-75 transition" src={whatsappIcon} alt="WhatsApp" />
+                </a>
+              )}
+              {data.contact?.tiktok && (
+                <a href={data.contact.tiktok} target="_blank" rel="noopener noreferrer">
+                  <img className="w-8 h-8 object-contain hover:opacity-75 transition" src={tiktokIcon} alt="TikTok" />
+                </a>
+              )}
             </div>
           </div>
         </div>

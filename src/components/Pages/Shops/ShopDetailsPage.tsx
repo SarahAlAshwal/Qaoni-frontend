@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import facebookIcon from "../../../assets/facebook.svg";
 import instagramIcon from "../../../assets/instagram.svg";
+import whatsappIcon from "../../../assets/whatsapp.svg";
+import tiktokIcon from "../../../assets/tiktok.svg";
 import { apiFetch } from "../../../services/api";
 
 interface ProductImage {
@@ -34,6 +36,8 @@ interface ShopDetails {
     address?: string;
     instagram?: string;
     facebook?: string;
+    whatsapp?: string;
+    tiktok?: string;
   };
 }
 
@@ -274,7 +278,7 @@ export default function ShopDetailsPage() {
               ✕
             </button>
             {selectedProduct.images.length > 0 && (
-              <div className="relative bg-gray-50">
+              <div className="relative bg-gray-50 pt-10">
                 <img
                   src={selectedProduct.images[modalImageIndex].url}
                   alt={selectedProduct.name}
@@ -314,20 +318,33 @@ export default function ShopDetailsPage() {
         <div className="container mx-auto px-6 text-center md:text-left">
           <h2 className="text-2xl font-semibold mb-6 text-gray-800">Contact {shop.name}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-700">
-            <div>
-              <p><strong>Phone:</strong> {shop.contact?.phone || "Not provided"}</p>
-              <p><strong>Email:</strong> {shop.contact?.email || "Not provided"}</p>
-              <p><strong>Address:</strong> {shop.contact?.address || "Not provided"}</p>
+            <div className="space-y-1">
+              {shop.contact?.phone && <p><strong>Phone:</strong> {shop.contact.phone}</p>}
+              {shop.contact?.email && <p><strong>Email:</strong> {shop.contact.email}</p>}
+              {shop.contact?.address && <p><strong>Address:</strong> {shop.contact.address}</p>}
+              {!shop.contact?.phone && !shop.contact?.email && !shop.contact?.address && (
+                <p className="text-gray-400 italic">No contact info provided.</p>
+              )}
             </div>
-            <div className="flex items-center gap-4 mt-4">
+            <div className="flex items-center gap-4 justify-center md:justify-start">
               {shop.contact?.facebook && (
                 <a href={shop.contact.facebook} target="_blank" rel="noopener noreferrer">
-                  <img className="max-w-[20%]" src={facebookIcon} alt="facebook" />
+                  <img className="w-8 h-8 object-contain hover:opacity-75 transition" src={facebookIcon} alt="Facebook" />
                 </a>
               )}
               {shop.contact?.instagram && (
                 <a href={shop.contact.instagram} target="_blank" rel="noopener noreferrer">
-                  <img className="max-w-[20%]" src={instagramIcon} alt="instagram" />
+                  <img className="w-8 h-8 object-contain hover:opacity-75 transition" src={instagramIcon} alt="Instagram" />
+                </a>
+              )}
+              {shop.contact?.whatsapp && (
+                <a href={`https://wa.me/${shop.contact.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">
+                  <img className="w-8 h-8 object-contain hover:opacity-75 transition" src={whatsappIcon} alt="WhatsApp" />
+                </a>
+              )}
+              {shop.contact?.tiktok && (
+                <a href={shop.contact.tiktok} target="_blank" rel="noopener noreferrer">
+                  <img className="w-8 h-8 object-contain hover:opacity-75 transition" src={tiktokIcon} alt="TikTok" />
                 </a>
               )}
             </div>

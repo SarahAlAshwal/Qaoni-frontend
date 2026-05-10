@@ -64,6 +64,8 @@ export default function ShopEditorPage() {
       address: "",
       instagram: "",
       facebook: "",
+      whatsapp: "",
+      tiktok: "",
     },
   });
   const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
@@ -395,6 +397,8 @@ export default function ShopEditorPage() {
             address: shop.contact?.address || "",
             instagram: shop.contact?.instagram || "",
             facebook: shop.contact?.facebook || "",
+            whatsapp: shop.contact?.whatsapp || "",
+            tiktok: shop.contact?.tiktok || "",
           },
         };
 
@@ -618,7 +622,7 @@ export default function ShopEditorPage() {
         <h2 className="font-semibold">Logo</h2>
         <ImageUploader multiple={false} label="Upload Logo" onUpload={handleLogoUpload} />
         {logo && (
-          <img src={logo} onClick={() => setPreviewSrc(logo)} className="w-32 rounded-lg mt-3 cursor-pointer" />
+          <img src={logo} onClick={() => setPreviewSrc(logo)} className="w-32 h-32 object-contain rounded-lg mt-3 cursor-pointer" />
         )}
       </div>
 
@@ -700,9 +704,11 @@ export default function ShopEditorPage() {
       {/* Contact */}
       <div className="bg-white p-6 rounded-xl shadow-md space-y-4">
         <h2 className="font-semibold">Contact Information</h2>
-        {(["phone", "email", "address", "instagram", "facebook"] as const).map((field) => (
+        {(["phone", "email", "address", "instagram", "facebook", "whatsapp", "tiktok"] as const).map((field) => (
           <div key={field}>
-            <label className="block font-medium capitalize">{field === "phone" ? "Phone Number" : field.charAt(0).toUpperCase() + field.slice(1)}</label>
+            <label className="block font-medium">
+              {field === "phone" ? "Phone Number" : field === "whatsapp" ? "WhatsApp" : field === "tiktok" ? "TikTok" : field.charAt(0).toUpperCase() + field.slice(1)}
+            </label>
             <input
               type="text"
               className="w-full border rounded-lg p-2"
