@@ -1,7 +1,9 @@
 export type GetToken = () => Promise<string>;
 
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
+
 export async function apiFetch(
-  input: RequestInfo | URL,
+  path: string,
   init: RequestInit = {},
   getToken?: GetToken
 ) {
@@ -12,5 +14,5 @@ export async function apiFetch(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  return fetch(input, { ...init, headers });
+  return fetch(`${API_BASE}${path}`, { ...init, headers });
 }
