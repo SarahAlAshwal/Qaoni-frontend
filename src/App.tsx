@@ -10,6 +10,8 @@ import CategoryDetailsPage from "./components/Pages/Categories/CategoryDetailsPa
 import ShopDetailsPage from "./components/Pages/Shops/ShopDetailsPage";
 import ShopEditorPage from "./components/Pages/Shops/ShopsEditor";
 import AdminPage from "./components/Pages/Admin/AdminPage";
+import AboutPage from "./components/Pages/AboutPage";
+import ContactPage from "./components/Pages/ContactPage";
 
 function App() {
 
@@ -30,7 +32,8 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/about" element={<h1>About</h1>} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="/login" element={<h1>Login</h1>} />
           <Route
             path="/dashboard"
