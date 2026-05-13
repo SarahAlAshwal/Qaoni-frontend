@@ -621,6 +621,7 @@ export default function ShopEditorPage() {
       <div className="bg-white p-6 rounded-xl shadow-md space-y-3">
         <h2 className="font-semibold">Logo</h2>
         <ImageUploader multiple={false} label="Upload Logo" onUpload={handleLogoUpload} />
+        <p className="text-xs text-gray-400">Square image recommended (1:1) — max 2 MB</p>
         {logo && (
           <img src={logo} onClick={() => setPreviewSrc(logo)} className="w-32 h-32 object-contain rounded-lg mt-3 cursor-pointer" />
         )}
@@ -723,6 +724,7 @@ export default function ShopEditorPage() {
       <div className="bg-white p-6 rounded-xl shadow-md">
         <h2 className="font-semibold mb-3">Hero Image</h2>
         <ImageUploader multiple={false} label="Upload Hero Image" onUpload={handleHeroUpload} />
+        <p className="text-xs text-gray-400 mt-1">Wide landscape image recommended (16:9) — max 5 MB</p>
         {hero && (
           <img
             src={hero}
@@ -772,17 +774,20 @@ export default function ShopEditorPage() {
               onChange={(e) => setNewDraft({ ...newDraft, description: e.target.value })}
             />
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <ImageUploader
-                label="Add Images"
-                multiple={true}
-                onUpload={(newFiles) =>
-                  setNewDraft((prev) => ({
-                    ...prev,
-                    files: [...prev.files, ...newFiles],
-                    previews: [...prev.previews, ...newFiles.map((f) => URL.createObjectURL(f))],
-                  }))
-                }
-              />
+              <div>
+                <ImageUploader
+                  label="Add Images"
+                  multiple={true}
+                  onUpload={(newFiles) =>
+                    setNewDraft((prev) => ({
+                      ...prev,
+                      files: [...prev.files, ...newFiles],
+                      previews: [...prev.previews, ...newFiles.map((f) => URL.createObjectURL(f))],
+                    }))
+                  }
+                />
+                <p className="text-xs text-gray-400 mt-1">Square or landscape, max 2 MB each</p>
+              </div>
               <button
                 onClick={() => void handleAddProduct()}
                 disabled={isProductSaving || !newDraft.name.trim()}
@@ -872,6 +877,7 @@ export default function ShopEditorPage() {
                           }))
                         }
                       />
+                      <p className="text-xs text-gray-400 mt-1">Square or landscape, max 2 MB each</p>
                       {editDraft.previews.length > 0 && (
                         <div className="flex flex-wrap gap-2">
                           {editDraft.previews.map((src, i) => (
