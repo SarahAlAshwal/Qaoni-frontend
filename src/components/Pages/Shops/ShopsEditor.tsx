@@ -621,9 +621,23 @@ export default function ShopEditorPage() {
       <div className="bg-white p-6 rounded-xl shadow-md space-y-3">
         <h2 className="font-semibold">Logo</h2>
         <ImageUploader multiple={false} label="Upload Logo" onUpload={handleLogoUpload} />
-        <p className="text-xs text-gray-400 mt-1">Square image recommended (1:1) — max 2 MB</p>
+        <p className="text-xs text-gray-400 mt-3">Square image recommended (1:1) — max 2 MB</p>
         {logo && (
           <img src={logo} onClick={() => setPreviewSrc(logo)} className="w-32 h-32 object-contain rounded-lg mt-3 cursor-pointer" />
+        )}
+      </div>
+
+      {/* Hero */}
+      <div className="bg-white p-6 rounded-xl shadow-md">
+        <h2 className="font-semibold mb-3">Hero Image</h2>
+        <ImageUploader multiple={false} label="Upload Hero Image" onUpload={handleHeroUpload} />
+        <p className="text-xs text-gray-400 mt-3">Wide landscape image recommended (16:9) — max 5 MB</p>
+        {hero && (
+          <img
+            src={hero}
+            className="w-full h-56 object-cover mt-4 rounded-lg cursor-pointer"
+            onClick={() => setPreviewSrc(hero)}
+          />
         )}
       </div>
 
@@ -720,20 +734,6 @@ export default function ShopEditorPage() {
         ))}
       </div>
 
-      {/* Hero */}
-      <div className="bg-white p-6 rounded-xl shadow-md">
-        <h2 className="font-semibold mb-3">Hero Image</h2>
-        <ImageUploader multiple={false} label="Upload Hero Image" onUpload={handleHeroUpload} />
-        <p className="text-xs text-gray-400 mt-1">Wide landscape image recommended (16:9) — max 5 MB</p>
-        {hero && (
-          <img
-            src={hero}
-            className="w-full h-56 object-cover mt-4 rounded-lg cursor-pointer"
-            onClick={() => setPreviewSrc(hero)}
-          />
-        )}
-      </div>
-
       {/* Products */}
       {shopId && (
         <div className="bg-white p-6 rounded-xl shadow-md space-y-6">
@@ -786,7 +786,7 @@ export default function ShopEditorPage() {
                     }))
                   }
                 />
-                <p className="text-xs text-gray-400 mt-1">Square or landscape, max 2 MB each</p>
+                <p className="text-xs text-gray-400 mt-3">Square or landscape, max 2 MB each</p>
               </div>
               <button
                 onClick={() => void handleAddProduct()}
@@ -877,7 +877,7 @@ export default function ShopEditorPage() {
                           }))
                         }
                       />
-                      <p className="text-xs text-gray-400 mt-1">Square or landscape, max 2 MB each</p>
+                      <p className="text-xs text-gray-400 mt-3">Square or landscape, max 2 MB each</p>
                       {editDraft.previews.length > 0 && (
                         <div className="flex flex-wrap gap-2">
                           {editDraft.previews.map((src, i) => (
