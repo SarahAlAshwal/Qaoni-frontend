@@ -621,7 +621,7 @@ export default function ShopEditorPage() {
       <div className="bg-white p-6 rounded-xl shadow-md space-y-3">
         <h2 className="font-semibold">Logo</h2>
         <ImageUploader multiple={false} label="Upload Logo" onUpload={handleLogoUpload} />
-        <p className="text-xs text-gray-400">Square image recommended (1:1) — max 2 MB</p>
+        <p className="text-xs text-gray-400 mt-1">Square image recommended (1:1) — max 2 MB</p>
         {logo && (
           <img src={logo} onClick={() => setPreviewSrc(logo)} className="w-32 h-32 object-contain rounded-lg mt-3 cursor-pointer" />
         )}
