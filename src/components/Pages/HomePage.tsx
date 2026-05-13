@@ -1,6 +1,6 @@
 import { useEffect, useState, type FC } from "react";
 import Slideshow, { type Slide } from "../Shared/Slideshow";
-import FeaturedShops, { type Shop } from "../Layouts/FeaturedShops";
+import FeaturedShops, { type Shop } from "../layouts/FeaturedShops";
 import { apiFetch } from "../../services/api";
 
 const HomePage: FC = () => {

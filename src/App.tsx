@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import './App.css';
-import Header from './components/Layouts/Header';
-import Footer from './components/Layouts/Footer';
+import Header from './components/layouts/Header';
+import Footer from './components/layouts/Footer';
 import HomePage from "./components/Pages/HomePage";
 import ProtectedRoute from "./ProtectedRoutes";
 import ShopsPage from "./components/Pages/Shops/Shops";
