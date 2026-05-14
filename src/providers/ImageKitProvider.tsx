@@ -1,5 +1,6 @@
 import { IKContext } from "imagekitio-react";
 import { useAuth0 } from "@auth0/auth0-react";
+import { apiFetch } from "../services/api";
 
 const IMAGEKIT_PUBLIC_KEY = import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY!;
 const IMAGEKIT_URL_ENDPOINT = import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT!;
@@ -9,7 +10,7 @@ export const ImageKitProvider = ({ children }: { children: React.ReactNode }) =>
 
   const authenticator = async () => {
     const token = await getAccessTokenSilently();
-    const res = await fetch("/api/imagekit/auth", {
+    const res = await apiFetch("/api/imagekit/auth", {
       headers: {
         Authorization: `Bearer ${token}`,
       },

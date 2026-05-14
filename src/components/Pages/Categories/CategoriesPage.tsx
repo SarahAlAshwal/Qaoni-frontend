@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import SearchBar from "../../Shared/SearchBar";
 import CategoryCard from "./CategoryCard";
+import { apiFetch } from "../../../services/api";
 
 interface CategorySummary {
   name: string;
@@ -20,7 +21,7 @@ const CategoriesPage = () => {
 
     const loadCategories = async () => {
       try {
-        const res = await fetch("/api/categories");
+        const res = await apiFetch("/api/categories");
         if (!res.ok) {
           throw new Error("Failed to load categories");
         }

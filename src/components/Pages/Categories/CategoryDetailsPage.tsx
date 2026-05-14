@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ShopCard from "../Shops/ShopCard";
+import { apiFetch } from "../../../services/api";
 
 interface CategoryDetails {
   name: string;
@@ -33,7 +34,7 @@ export default function CategoryDetailsPage() {
       }
 
       try {
-        const res = await fetch(`/api/categories/${slug}`);
+        const res = await apiFetch(`/api/categories/${slug}`);
         if (!res.ok) {
           if (res.status === 404) {
             throw new Error("Category not found.");
