@@ -58,7 +58,7 @@ const HomePage: FC = () => {
                   id: item.shopId._id,
                   name: item.shopId.name,
                   logo: item.image?.url || item.shopId?.logo?.url,
-                  link: `/shops/${item.shopId.slug}`,
+                  link: `/businesses/${item.shopId.slug}`,
                 }))
             : []
         );

@@ -49,7 +49,7 @@ const dedupeCategories = (categories: string[]) => {
 };
 
 export default function ShopEditorPage() {
-  const { getAccessTokenSilently } = useAuth();
+  const { getAccessTokenSilently, user } = useAuth();
 
   const [shopData, setShopData] = useState({
     name: "",
@@ -89,6 +89,19 @@ export default function ShopEditorPage() {
   const [visibilityModal, setVisibilityModal] = useState<"publish" | "unpublish" | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [subscribers, setSubscribers] = useState<{ _id: string; email: string; subscribedAt: string }[]>([]);
+  const [showSubscribers, setShowSubscribers] = useState(false);
+  const [confirmDeleteSubscriber, setConfirmDeleteSubscriber] = useState<string | null>(null);
+
+  const handleDeleteSubscriber = async (subscriberId: string) => {
+    if (!shopId) return;
+    try {
+      await apiFetch(`/api/subscriptions/${shopId}/${subscriberId}`, { method: "DELETE" }, getAccessTokenSilently);
+      setSubscribers((prev) => prev.filter((s) => s._id !== subscriberId));
+    } catch {
+      setToast("Failed to remove subscriber.");
+    }
+  };
   const [isEditing, setIsEditing] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -418,6 +431,9 @@ export default function ShopEditorPage() {
         });
 
         await loadProducts(shop._id);
+
+        const subRes = await apiFetch(`/api/subscriptions/${shop._id}`, { method: "GET" }, getAccessTokenSilently);
+        if (subRes.ok && isMounted) setSubscribers(await subRes.json());
       } catch (err) {
         console.error(err);
       } finally {
@@ -466,6 +482,7 @@ export default function ShopEditorPage() {
         categories: shopData.categories,
         contact: shopData.contact,
         isPublished: nextPublished,
+        ownerEmail: user?.email ?? undefined,
       };
 
       const res = await apiFetch(
@@ -557,33 +574,81 @@ export default function ShopEditorPage() {
 
   if (!isEditing && shopId) {
     return (
-      <ShopPreviewPage
-        data={shopData}
-        logo={logo}
-        hero={hero}
-        products={products}
-        statusLabel={isPublished ? "Published" : "Draft"}
-        statusActionLabel={isPublished ? "Unpublish" : "Publish"}
-        onStatusAction={() => setVisibilityModal(isPublished ? "unpublish" : "publish")}
-        statusModalOpen={Boolean(visibilityModal)}
-        statusModalTitle={visibilityModal === "publish" ? "Publish shop?" : "Unpublish shop?"}
-        statusModalDescription={
-          visibilityModal === "publish"
-            ? "Publishing makes your shop visible on the public site and allows it to qualify for featured placement."
-            : "Unpublishing removes your shop from public pages and featured-shop eligibility."
-        }
-        statusChecklist={visibilityModal === "publish" ? publishChecks : undefined}
-        statusModalDisabled={isSaving || (visibilityModal === "publish" && !canPublish)}
-        statusModalConfirmLabel={visibilityModal === "publish" ? "Confirm Publish" : "Confirm Unpublish"}
-        onCloseStatusModal={() => setVisibilityModal(null)}
-        onConfirmStatusAction={() => {
-          void handleSave(visibilityModal === "publish");
-          setVisibilityModal(null);
-        }}
-        onClose={() => setIsEditing(true)}
-        modeTitle="My Shop"
-        actionLabel="Edit"
-      />
+      <>
+        <ShopPreviewPage
+          data={shopData}
+          logo={logo}
+          hero={hero}
+          products={products}
+          statusLabel={isPublished ? "Published" : "Draft"}
+          statusActionLabel={isPublished ? "Unpublish" : "Publish"}
+          onStatusAction={() => setVisibilityModal(isPublished ? "unpublish" : "publish")}
+          statusModalOpen={Boolean(visibilityModal)}
+          statusModalTitle={visibilityModal === "publish" ? "Publish shop?" : "Unpublish shop?"}
+          statusModalDescription={
+            visibilityModal === "publish"
+              ? "Publishing makes your shop visible on the public site and allows it to qualify for featured placement."
+              : "Unpublishing removes your shop from public pages and featured-shop eligibility."
+          }
+          statusChecklist={visibilityModal === "publish" ? publishChecks : undefined}
+          statusModalDisabled={isSaving || (visibilityModal === "publish" && !canPublish)}
+          statusModalConfirmLabel={visibilityModal === "publish" ? "Confirm Publish" : "Confirm Unpublish"}
+          onCloseStatusModal={() => setVisibilityModal(null)}
+          onConfirmStatusAction={() => {
+            void handleSave(visibilityModal === "publish");
+            setVisibilityModal(null);
+          }}
+          onClose={() => setIsEditing(true)}
+          modeTitle="My Shop"
+          actionLabel="Edit"
+          onViewSubscribers={() => setShowSubscribers(true)}
+        />
+
+        {showSubscribers && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">Subscribers ({subscribers.length})</h2>
+                <button onClick={() => { setShowSubscribers(false); setConfirmDeleteSubscriber(null); }} className="text-gray-400 hover:text-gray-600 cursor-pointer text-xl leading-none">✕</button>
+              </div>
+              {subscribers.length === 0 ? (
+                <p className="text-sm text-gray-400">No subscribers yet.</p>
+              ) : (
+                <ul className="divide-y divide-gray-100 max-h-80 overflow-y-auto">
+                  {subscribers.map((sub) => (
+                    <li key={sub.email} className="flex items-center justify-between py-2 text-sm gap-2">
+                      <span className="text-gray-800 truncate">{sub.email}</span>
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        {confirmDeleteSubscriber === sub._id ? (
+                          <>
+                            <span className="text-gray-500 text-xs">Remove?</span>
+                            <button
+                              onClick={() => { void handleDeleteSubscriber(sub._id); setConfirmDeleteSubscriber(null); }}
+                              className="text-red-500 hover:text-red-700 cursor-pointer text-xs font-medium"
+                            >Yes</button>
+                            <button
+                              onClick={() => setConfirmDeleteSubscriber(null)}
+                              className="text-gray-400 hover:text-gray-600 cursor-pointer text-xs"
+                            >Cancel</button>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-gray-400 text-xs">{new Date(sub.subscribedAt).toLocaleDateString()}</span>
+                            <button
+                              onClick={() => setConfirmDeleteSubscriber(sub._id)}
+                              className="text-red-400 hover:text-red-600 cursor-pointer text-xs"
+                            >Remove</button>
+                          </>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
+      </>
     );
   }
 

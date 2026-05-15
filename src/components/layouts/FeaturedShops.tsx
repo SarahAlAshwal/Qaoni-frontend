@@ -18,7 +18,7 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
   return (
     <section className="py-12">
       <h2 className="text-2xl font-bold mb-8 text-center md:text-left">
-        Featured Shops
+        Featured Businesses
       </h2>
 
       {/* Mobile (≤ sm) → 1 col, max 3 shops */}
@@ -38,7 +38,7 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
               href={shop.link}
               className="mt-2 px-4 py-1 bg-brand-primary text-white text-sm rounded-md font-medium hover:bg-brand-secondary transition"
             >
-              Shop Now
+              Visit
             </a>
           </div>
         ))}
@@ -46,10 +46,10 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
       {shops.length > mobileLimit && (
         <div className="sm:hidden flex justify-center mt-8">
           <a
-            href="/shops"
+            href="/businesses"
             className="px-5 py-2 bg-brand-primary text-white rounded-lg font-medium hover:bg-brand-secondary transition"
           >
-            View All Shops
+            View All Businesses
           </a>
         </div>
       )}
@@ -71,7 +71,7 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
               href={shop.link}
               className="mt-2 px-4 py-1 bg-brand-primary text-white text-sm rounded-md font-medium hover:bg-brand-secondary transition"
             >
-              Shop Now
+              Visit
             </a>
           </div>
         ))}
@@ -79,10 +79,10 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
       {shops.length > tabletLimit && (
         <div className="hidden sm:flex md:hidden justify-center mt-8">
           <a
-            href="/shops"
+            href="/businesses"
             className="px-5 py-2 bg-brand-primary text-white rounded-lg font-medium hover:bg-brand-secondary transition"
           >
-            View All Shops
+            View All Businesses
           </a>
         </div>
       )}
@@ -108,7 +108,7 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
             >
               <p className="text-lg font-semibold mb-2">{shop.name}</p>
               <span className="px-3 py-1 bg-white text-brand-primary text-sm rounded-md font-medium hover:bg-brand-accent/30">
-                Shop Now
+                Visit
               </span>
             </a>
           </div>
@@ -117,10 +117,10 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
       {shops.length > desktopLimit && (
         <div className="hidden md:flex justify-center mt-8">
           <a
-            href="/shops"
+            href="/businesses"
             className="px-5 py-2 bg-brand-primary text-white rounded-lg font-medium hover:bg-brand-secondary transition"
           >
-            View All Shops
+            View All Businesses
           </a>
         </div>
       )}

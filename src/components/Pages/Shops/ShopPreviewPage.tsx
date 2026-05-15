@@ -48,6 +48,7 @@ interface ShopPreviewProps {
   statusChecklist?: Array<{ label: string; ok: boolean }>;
   onCloseStatusModal?: () => void;
   onConfirmStatusAction?: () => void;
+  onViewSubscribers?: () => void;
 }
 
 export default function ShopPreviewPage({
@@ -69,6 +70,7 @@ export default function ShopPreviewPage({
   statusChecklist,
   onCloseStatusModal,
   onConfirmStatusAction,
+  onViewSubscribers,
 }: ShopPreviewProps) {
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
   const [productImageIndex, setProductImageIndex] = useState<Record<string, number>>({});
@@ -105,12 +107,22 @@ export default function ShopPreviewPage({
             </button>
           ) : null}
         </div>
-        <button
-          onClick={onClose}
-          className="px-4 py-2 bg-black text-white rounded-lg cursor-pointer"
-        >
-          {actionLabel}
-        </button>
+        <div className="flex items-center gap-2">
+          {onViewSubscribers && (
+            <button
+              onClick={onViewSubscribers}
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 cursor-pointer"
+            >
+              Subscribers
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-black text-white rounded-lg cursor-pointer"
+          >
+            {actionLabel}
+          </button>
+        </div>
       </div>
 
       {/* Hero Section */}

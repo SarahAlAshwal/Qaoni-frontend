@@ -20,12 +20,12 @@ function App() {
       <Header />
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/shops" element={<ShopsPage />} />
-          <Route path="/shops/:slug" element={<ShopDetailsPage />} />
+          <Route path="/businesses" element={<ShopsPage />} />
+          <Route path="/businesses/:slug" element={<ShopDetailsPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/categories/:slug" element={<CategoryDetailsPage />} />
           <Route
-            path="/my-shop"
+            path="/my-space"
             element={
               <ProtectedRoute requiredRole="shop_owner">
                 <ShopEditorPage />

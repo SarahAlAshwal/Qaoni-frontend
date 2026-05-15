@@ -18,14 +18,14 @@ const Header: FC = () => {
         {/* Desktop Navigation */}
         <nav className="hidden min-[830px]:flex space-x-6 text-gray-700 font-medium">
           <Link to="/" className="hover:text-brand-secondary transition-colors">Home</Link>
-          <Link to="/shops" className="hover:text-brand-secondary transition-colors">Shops</Link>
+          <Link to="/businesses" className="hover:text-brand-secondary transition-colors">Businesses</Link>
           <Link to="/categories" className="hover:text-brand-secondary transition-colors">Categories</Link>
           <Link to="/about" className="hover:text-brand-secondary transition-colors">About</Link>
           {isAuthenticated && (
             <>
               {isShopOwner() && (
-                <Link to="/my-shop" className="hover:text-brand-secondary transition-colors">
-                  My Shop
+                <Link to="/my-space" className="hover:text-brand-secondary transition-colors">
+                  My Space
                 </Link>
               )}
               {isAdmin() && (
@@ -37,14 +37,14 @@ const Header: FC = () => {
           )}
         </nav>
 
-        {/* Login button (desktop only) */}
+        {/* Business Login button (desktop only) */}
         <div className="hidden min-[830px]:block">
           {!isAuthenticated ? (
             <button
               onClick={() => login()}
               className="bg-brand-primary text-white px-4 py-2 rounded-lg shadow hover:bg-brand-secondary transition cursor-pointer"
             >
-              Login
+              Business Login
             </button>
           ) : (
             <div className="flex items-center space-x-3 max-[1050px]:flex-col max-[1050px]:items-end max-[1050px]:space-x-0 max-[1050px]:gap-1">
@@ -84,18 +84,18 @@ const Header: FC = () => {
         <div className="min-[830px]:hidden absolute top-full left-0 w-full bg-white border-t border-gray-200 shadow-md z-50">
           <nav className="flex flex-col space-y-4 px-6 py-4 text-gray-700 font-medium">
             <Link to="/" className="hover:text-brand-secondary transition-colors" onClick={() => setIsOpen(false)}>Home</Link>
-            <Link to="/shops" className="hover:text-brand-secondary transition-colors" onClick={() => setIsOpen(false)}>Shops</Link>
+            <Link to="/businesses" className="hover:text-brand-secondary transition-colors" onClick={() => setIsOpen(false)}>Businesses</Link>
             <Link to="/categories" className="hover:text-brand-secondary transition-colors" onClick={() => setIsOpen(false)}>Categories</Link>
             <Link to="/about" className="hover:text-brand-secondary transition-colors" onClick={() => setIsOpen(false)}>About</Link>
             {isAuthenticated && (
               <>
                 {isShopOwner() && (
                   <Link
-                    to="/my-shop"
+                    to="/my-space"
                     className="hover:text-brand-secondary transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
-                    My Shop
+                    My Space
                   </Link>
                 )}
                 {isAdmin() && (
@@ -106,14 +106,14 @@ const Header: FC = () => {
               </>
             )}
 
-            {/* Login button (mobile) */}
+            {/* Business Login button (mobile) */}
            <div>
              {!isAuthenticated ? (
                 <button
                     onClick={() => login()}
                     className="bg-brand-primary text-white px-4 py-2 rounded-lg shadow hover:bg-brand-secondary transition cursor-pointer"
                 >
-                    Login
+                    Business Login
                 </button>
             ) : (
             <div className="flex items-center space-x-3">

@@ -50,6 +50,8 @@ export default function ShopDetailsPage() {
   const [productImageIndex, setProductImageIndex] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [subscribeEmail, setSubscribeEmail] = useState("");
+  const [subscribeStatus, setSubscribeStatus] = useState<"idle" | "loading" | "success" | "duplicate" | "error">("idle");
 
   const stepProductImage = (id: string, total: number, dir: 1 | -1) => {
     setProductImageIndex((prev) => ({
@@ -94,6 +96,24 @@ export default function ShopDetailsPage() {
     void load();
     return () => { isMounted = false; };
   }, [slug]);
+
+  const handleSubscribe = async () => {
+    if (!shop || !subscribeEmail.trim()) return;
+    setSubscribeStatus("loading");
+    try {
+      const res = await apiFetch(`/api/subscriptions/${shop._id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: subscribeEmail.trim() }),
+      });
+      if (res.status === 409) { setSubscribeStatus("duplicate"); return; }
+      if (!res.ok) { setSubscribeStatus("error"); return; }
+      setSubscribeStatus("success");
+      setSubscribeEmail("");
+    } catch {
+      setSubscribeStatus("error");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -313,6 +333,39 @@ export default function ShopDetailsPage() {
           </div>
         </div>
       )}
+
+      <section className="container mx-auto px-6 py-10">
+        <div className="max-w-md">
+          <h2 className="text-2xl font-semibold mb-2 text-gray-800">Stay Updated</h2>
+          <p className="text-gray-500 text-sm mb-4">Subscribe to get notified when {shop.name} adds new products.</p>
+          {subscribeStatus === "success" ? (
+            <p className="text-green-600 font-medium">You're subscribed!</p>
+          ) : (
+            <div className="flex gap-2">
+              <input
+                type="email"
+                placeholder="Your email address"
+                className="flex-1 border rounded-lg px-3 py-2 text-sm"
+                value={subscribeEmail}
+                onChange={(e) => { setSubscribeEmail(e.target.value); setSubscribeStatus("idle"); }}
+              />
+              <button
+                onClick={() => void handleSubscribe()}
+                disabled={subscribeStatus === "loading" || !subscribeEmail.trim()}
+                className="bg-brand-primary text-white px-4 py-2 rounded-lg text-sm hover:bg-brand-secondary disabled:opacity-50 cursor-pointer"
+              >
+                {subscribeStatus === "loading" ? "..." : "Subscribe"}
+              </button>
+            </div>
+          )}
+          {subscribeStatus === "duplicate" && (
+            <p className="text-amber-600 text-sm mt-2">This email is already subscribed.</p>
+          )}
+          {subscribeStatus === "error" && (
+            <p className="text-red-600 text-sm mt-2">Something went wrong. Please try again.</p>
+          )}
+        </div>
+      </section>
 
       <section className="bg-gray-100 py-10">
         <div className="container mx-auto px-6 text-center md:text-left">

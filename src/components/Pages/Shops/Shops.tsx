@@ -116,7 +116,7 @@ export default function ShopsPage() {
     <div className="container mx-auto px-6 py-8">
       {/* Search + Filter */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-        <SearchBar onSearch={setSearchQuery} placeholder="Search shops..." />
+        <SearchBar onSearch={setSearchQuery} placeholder="Search businesses..." />
         <Filter
           categories={categories}
           onFilterChange={(f) => {

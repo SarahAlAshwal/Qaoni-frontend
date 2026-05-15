@@ -91,8 +91,8 @@ export default function AboutPage() {
           Whether you're a shop owner looking to reach more customers, or a shopper looking for something special — Qaoni is your place.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link to="/shops" className="bg-brand-secondary text-white px-8 py-3 rounded-lg font-medium hover:opacity-90 transition">
-            Explore shops
+          <Link to="/businesses" className="bg-brand-secondary text-white px-8 py-3 rounded-lg font-medium hover:opacity-90 transition">
+            Explore Businesses
           </Link>
           <Link to="/contact" className="bg-white text-brand-primary px-8 py-3 rounded-lg font-medium hover:bg-gray-100 transition">
             Get in touch

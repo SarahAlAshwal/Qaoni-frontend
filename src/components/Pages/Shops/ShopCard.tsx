@@ -125,10 +125,10 @@ useEffect(() => {
 
         {/* Hover CTA */}
         <Link
-          to={`/shops/${shop.slug || shop.name.toLowerCase().replace(/\s+/g, "-")}`}
+          to={`/businesses/${shop.slug || shop.name.toLowerCase().replace(/\s+/g, "-")}`}
           className="mt-4 bg-white text-brand-primary font-medium text-sm px-4 py-2 rounded-lg shadow-md opacity-0 group-hover:opacity-100 text-brand-secondary transition duration-300"
         >
-          Visit Shop
+          Visit
         </Link>
       </div>
     </div>

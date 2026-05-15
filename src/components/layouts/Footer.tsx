@@ -43,7 +43,7 @@ const Footer: FC = () => {
 
         {/* Quick Links */}
         <FooterSection title="Quick Links">
-          <li><Link to="/shops" className="hover:text-brand-secondary">Shops</Link></li>
+          <li><Link to="/businesses" className="hover:text-brand-secondary">Businesses</Link></li>
           <li><Link to="/categories" className="hover:text-brand-secondary">Categories</Link></li>
           <li><Link to="/about" className="hover:text-brand-secondary">About</Link></li>
           <li><Link to="/contact" className="hover:text-brand-secondary">Contact</Link></li>
