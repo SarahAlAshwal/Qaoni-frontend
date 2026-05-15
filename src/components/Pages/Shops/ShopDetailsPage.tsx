@@ -172,16 +172,14 @@ export default function ShopDetailsPage() {
         </section>
       )}
 
-      <section className="container mx-auto px-6 py-10 flex flex-col md:flex-row gap-8 items-center">
-        <div className="flex-1">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-800">About {shop.name}</h2>
-          <p className="text-gray-700 leading-relaxed">{shop.description}</p>
-        </div>
+      <section className="container mx-auto px-6 pt-4 pb-10">
         {logoUrl && (
-          <div className="flex-shrink-0">
-            <img src={logoUrl} alt={`${shop.name} logo`} className="w-40 h-40 object-contain mx-auto" />
+          <div className="relative z-10 w-fit min-w-20 md:min-w-28 max-w-36 md:max-w-48 -mt-12 md:-mt-16 mb-6 rounded-2xl border-4 border-white shadow-lg overflow-hidden">
+            <img src={logoUrl} alt={`${shop.name} logo`} className="w-full h-auto block" />
           </div>
         )}
+        <h2 className="text-2xl font-semibold mb-4 text-gray-800">About {shop.name}</h2>
+        <p className="text-gray-700 leading-relaxed">{shop.description}</p>
       </section>
 
       {featuredProducts.length > 0 && (
@@ -233,54 +231,53 @@ export default function ShopDetailsPage() {
         </section>
       )}
 
-      <section className="container mx-auto px-6 py-10">
-        <h2 className="text-2xl font-semibold mb-6 text-gray-800">Our Products</h2>
-        {products.length > 0 ? (
+      {products.length > 0 && (
+        <section className="container mx-auto px-6 py-10">
+          <h2 className="text-2xl font-semibold mb-6 text-gray-800">Our Products</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {products.map((product) => {
               const idx = productImageIndex[product._id] ?? 0;
               return (
-              <div
-                key={product._id}
-                className="bg-white shadow rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer"
-                onClick={() => { setSelectedProduct(product); setModalImageIndex(0); }}
-              >
-                {product.images.length > 0 && (
-                  <div className="relative h-48">
-                    <img src={product.images[idx].url} alt={product.name} className="w-full h-48 object-cover" />
-                    {product.images.length > 1 && (
-                      <>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); stepProductImage(product._id, product.images.length, -1); }}
-                          className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 text-white px-2 py-1 rounded cursor-pointer text-lg leading-none"
-                        >‹</button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); stepProductImage(product._id, product.images.length, 1); }}
-                          className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 text-white px-2 py-1 rounded cursor-pointer text-lg leading-none"
-                        >›</button>
-                        <span className="absolute bottom-1 right-2 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">
-                          {idx + 1}/{product.images.length}
-                        </span>
-                      </>
+                <div
+                  key={product._id}
+                  className="bg-white shadow rounded-xl overflow-hidden hover:shadow-lg transition cursor-pointer"
+                  onClick={() => { setSelectedProduct(product); setModalImageIndex(0); }}
+                >
+                  {product.images.length > 0 && (
+                    <div className="relative h-48">
+                      <img src={product.images[idx].url} alt={product.name} className="w-full h-48 object-cover" />
+                      {product.images.length > 1 && (
+                        <>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); stepProductImage(product._id, product.images.length, -1); }}
+                            className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 text-white px-2 py-1 rounded cursor-pointer text-lg leading-none"
+                          >‹</button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); stepProductImage(product._id, product.images.length, 1); }}
+                            className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 text-white px-2 py-1 rounded cursor-pointer text-lg leading-none"
+                          >›</button>
+                          <span className="absolute bottom-1 right-2 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">
+                            {idx + 1}/{product.images.length}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  <div className="p-4">
+                    <p className="font-semibold text-gray-900">{product.name}</p>
+                    {typeof product.price === "number" && (
+                      <p className="text-brand-primary font-medium mt-1">${product.price}</p>
+                    )}
+                    {product.description && (
+                      <p className="text-gray-600 text-sm mt-1 line-clamp-2">{product.description}</p>
                     )}
                   </div>
-                )}
-                <div className="p-4">
-                  <p className="font-semibold text-gray-900">{product.name}</p>
-                  {typeof product.price === "number" && (
-                    <p className="text-brand-primary font-medium mt-1">${product.price}</p>
-                  )}
-                  {product.description && (
-                    <p className="text-gray-600 text-sm mt-1 line-clamp-2">{product.description}</p>
-                  )}
                 </div>
-              </div>
-              ); })}
+              );
+            })}
           </div>
-        ) : (
-          <p className="text-gray-500">No products yet.</p>
-        )}
-      </section>
+        </section>
+      )}
 
       {selectedProduct && (
         <div
@@ -334,7 +331,7 @@ export default function ShopDetailsPage() {
         </div>
       )}
 
-      <section className="container mx-auto px-6 py-10">
+      <section className="container mx-auto px-6 py-10 text-left">
         <div className="max-w-md">
           <h2 className="text-2xl font-semibold mb-2 text-gray-800">Stay Updated</h2>
           <p className="text-gray-500 text-sm mb-4">Subscribe to get notified when {shop.name} adds new products.</p>

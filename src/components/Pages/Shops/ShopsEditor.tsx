@@ -599,7 +599,7 @@ export default function ShopEditorPage() {
             setVisibilityModal(null);
           }}
           onClose={() => setIsEditing(true)}
-          modeTitle="My Shop"
+          modeTitle="My Space"
           actionLabel="Edit"
           onViewSubscribers={() => setShowSubscribers(true)}
         />
@@ -653,401 +653,409 @@ export default function ShopEditorPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-8 space-y-10">
-      <h1 className="text-2xl font-bold">Manage Your Shop</h1>
-
-      {/* Visibility */}
-      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm text-gray-500">Visibility</p>
-            <p className="text-base font-medium text-gray-900">{isPublished ? "Published" : "Draft"}</p>
-          </div>
-          <div className="flex flex-col items-start gap-3 sm:items-end">
-            <p className="text-sm text-gray-600">
-              Published shops appear on the public site and can be featured once setup is complete.
-            </p>
-            <button
-              onClick={() => setVisibilityModal(isPublished ? "unpublish" : "publish")}
-              disabled={isSaving}
-              className={`rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60 cursor-pointer ${
-                isPublished
-                  ? "border border-brand-primary bg-white text-brand-primary hover:border-brand-secondary hover:text-brand-secondary"
-                  : "bg-brand-primary text-white hover:bg-brand-secondary"
-              }`}
-            >
-              {isPublished ? "Unpublish Shop" : "Publish Shop"}
-            </button>
-          </div>
-        </div>
+    <div className="max-w-6xl mx-auto p-6 lg:p-8 space-y-8">
+      <div className="flex items-baseline justify-between">
+        <h1 className="text-2xl font-bold">Manage Your Shop</h1>
+        <p className="text-sm text-gray-400"><span className="text-red-500">*</span> Required to publish</p>
       </div>
 
-      {/* Logo */}
-      <div className="bg-white p-6 rounded-xl shadow-md space-y-3">
-        <h2 className="font-semibold">Logo</h2>
-        <ImageUploader multiple={false} label="Upload Logo" onUpload={handleLogoUpload} />
-        <p className="text-xs text-gray-400 mt-3">Square image recommended (1:1) — max 2 MB</p>
-        {logo && (
-          <img src={logo} onClick={() => setPreviewSrc(logo)} className="w-32 h-32 object-contain rounded-lg mt-3 cursor-pointer" />
-        )}
-      </div>
+      <div className="lg:grid lg:grid-cols-3 lg:gap-8 space-y-8 lg:space-y-0">
 
-      {/* Hero */}
-      <div className="bg-white p-6 rounded-xl shadow-md">
-        <h2 className="font-semibold mb-3">Hero Image</h2>
-        <ImageUploader multiple={false} label="Upload Hero Image" onUpload={handleHeroUpload} />
-        <p className="text-xs text-gray-400 mt-3">Wide landscape image recommended (16:9) — max 5 MB</p>
-        {hero && (
-          <img
-            src={hero}
-            className="w-full h-56 object-cover mt-4 rounded-lg cursor-pointer"
-            onClick={() => setPreviewSrc(hero)}
-          />
-        )}
-      </div>
+        {/* Left column */}
+        <div className="lg:col-span-2 space-y-8">
 
-      {/* Shop Info */}
-      <div className="bg-white p-6 rounded-xl shadow-md space-y-4">
-        <div>
-          <label className="block font-medium">Shop Name</label>
-          <input
-            type="text"
-            className="w-full border rounded-lg p-2"
-            value={shopData.name}
-            onChange={(e) => setShopData({ ...shopData, name: e.target.value })}
-          />
-        </div>
-        <div>
-          <label className="block font-medium">Description</label>
-          <textarea
-            rows={3}
-            className="w-full border rounded-lg p-2"
-            value={shopData.description}
-            onChange={(e) => setShopData({ ...shopData, description: e.target.value })}
-          />
-        </div>
-        <div>
-          <label className="block font-medium">Location</label>
-          <input
-            type="text"
-            className="w-full border rounded-lg p-2"
-            value={shopData.location}
-            onChange={(e) => setShopData({ ...shopData, location: e.target.value })}
-          />
-        </div>
-        <div>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={shopData.hasDelivery}
-              onChange={(e) => setShopData({ ...shopData, hasDelivery: e.target.checked })}
-              className="w-4 h-4"
-            />
-            <span className="font-medium">Delivery available</span>
-          </label>
-        </div>
-      </div>
-
-      {/* Categories */}
-      <div className="bg-white p-6 rounded-xl shadow-md space-y-4">
-        <h2 className="font-semibold">Categories</h2>
-        <div className="flex flex-wrap gap-3">
-          {dedupeCategories([
-            ...categoryOptions.map((c) => c.name),
-            ...shopData.categories,
-          ]).map((cat) => (
-            <label key={cat} className="flex items-center gap-2">
+          {/* Shop Info + Contact — single grid so all labels share the same column */}
+          <div className="bg-white p-6 rounded-xl shadow-md">
+            <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] items-start gap-x-6 gap-y-4">
+              <label className="font-medium sm:pt-2">Shop Name <span className="text-red-500">*</span></label>
               <input
-                type="checkbox"
-                checked={shopData.categories.includes(cat)}
-                onChange={() => toggleCategory(cat)}
+                type="text"
+                className="w-full border rounded-lg p-2"
+                value={shopData.name}
+                onChange={(e) => setShopData({ ...shopData, name: e.target.value })}
               />
-              {cat}
-            </label>
-          ))}
-          {isCategoriesLoading && <p className="text-sm text-gray-500">Loading categories...</p>}
-        </div>
-        <div className="flex gap-2 mt-2">
-          <input
-            type="text"
-            placeholder="Add new category"
-            className="border p-2 rounded-lg flex-1"
-            value={shopData.newCategory}
-            onChange={(e) => setShopData({ ...shopData, newCategory: e.target.value })}
-          />
-          <button onClick={addNewCategory} className="px-4 py-2 bg-black text-white rounded-lg cursor-pointer">
-            Add
-          </button>
-        </div>
-      </div>
-
-      {/* Contact */}
-      <div className="bg-white p-6 rounded-xl shadow-md space-y-4">
-        <h2 className="font-semibold">Contact Information</h2>
-        {(["phone", "email", "address", "instagram", "facebook", "whatsapp", "tiktok"] as const).map((field) => (
-          <div key={field}>
-            <label className="block font-medium">
-              {field === "phone" ? "Phone Number" : field === "whatsapp" ? "WhatsApp" : field === "tiktok" ? "TikTok" : field.charAt(0).toUpperCase() + field.slice(1)}
-            </label>
-            <input
-              type="text"
-              className="w-full border rounded-lg p-2"
-              value={shopData.contact[field]}
-              onChange={(e) => updateContactField(field, e.target.value)}
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* Products */}
-      {shopId && (
-        <div className="bg-white p-6 rounded-xl shadow-md space-y-6">
-          <h2 className="font-semibold">Products</h2>
-
-          {/* Add product form */}
-          <div className="rounded-xl border border-dashed border-gray-300 p-4 space-y-3">
-            <p className="text-sm font-medium text-gray-700">Add a product</p>
-            <input
-              type="text"
-              placeholder="Product name *"
-              className="w-full border rounded-lg p-2 text-sm"
-              value={newDraft.name}
-              onChange={(e) => setNewDraft({ ...newDraft, name: e.target.value })}
-            />
-            <div className="flex gap-3">
+              <label className="font-medium sm:pt-2">Description <span className="text-red-500">*</span></label>
+              <textarea
+                rows={3}
+                className="w-full border rounded-lg p-2"
+                value={shopData.description}
+                onChange={(e) => setShopData({ ...shopData, description: e.target.value })}
+              />
+              <label className="font-medium sm:pt-2">Location</label>
               <input
-                type="number"
-                placeholder="Price"
-                className="w-32 border rounded-lg p-2 text-sm"
-                value={newDraft.price}
-                onChange={(e) => setNewDraft({ ...newDraft, price: e.target.value })}
+                type="text"
+                className="w-full border rounded-lg p-2"
+                value={shopData.location}
+                onChange={(e) => setShopData({ ...shopData, location: e.target.value })}
               />
-              <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <span className="hidden sm:block" />
+              <label className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={newDraft.isFeatured}
-                  onChange={(e) => setNewDraft({ ...newDraft, isFeatured: e.target.checked })}
+                  checked={shopData.hasDelivery}
+                  onChange={(e) => setShopData({ ...shopData, hasDelivery: e.target.checked })}
+                  className="w-4 h-4"
                 />
-                Featured
+                <span className="font-medium">Delivery available</span>
               </label>
-            </div>
-            <textarea
-              rows={2}
-              placeholder="Description"
-              className="w-full border rounded-lg p-2 text-sm"
-              value={newDraft.description}
-              onChange={(e) => setNewDraft({ ...newDraft, description: e.target.value })}
-            />
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <ImageUploader
-                  label="Add Images"
-                  multiple={true}
-                  onUpload={(newFiles) =>
-                    setNewDraft((prev) => ({
-                      ...prev,
-                      files: [...prev.files, ...newFiles],
-                      previews: [...prev.previews, ...newFiles.map((f) => URL.createObjectURL(f))],
-                    }))
-                  }
-                />
-                <p className="text-xs text-gray-400 mt-3">Square or landscape, max 2 MB each</p>
+
+              <div className="sm:col-span-2 border-t border-gray-100 pt-2">
+                <h2 className="font-semibold">Contact Information</h2>
               </div>
-              <button
-                onClick={() => void handleAddProduct()}
-                disabled={isProductSaving || !newDraft.name.trim()}
-                className="rounded-lg bg-brand-primary px-4 py-2 text-sm text-white hover:bg-brand-secondary disabled:opacity-50 cursor-pointer"
-              >
-                {isProductSaving ? "Saving..." : "Add Product"}
-              </button>
-            </div>
-            {newDraft.previews.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {newDraft.previews.map((src, i) => (
-                  <img
-                    key={i}
-                    src={src}
-                    onClick={() => setPreviewSrc(src)}
-                    className="w-16 h-16 object-cover rounded-md cursor-pointer border border-gray-200"
+
+              {(["phone", "email", "address", "instagram", "facebook", "whatsapp", "tiktok"] as const).map((field) => (
+                <div key={field} className="contents">
+                  <label className="font-medium sm:pt-2">
+                    {field === "phone" ? "Phone Number" : field === "whatsapp" ? "WhatsApp" : field === "tiktok" ? "TikTok" : field.charAt(0).toUpperCase() + field.slice(1)}
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full border rounded-lg p-2"
+                    value={shopData.contact[field]}
+                    onChange={(e) => updateContactField(field, e.target.value)}
                   />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Product list */}
-          {products.length === 0 ? (
-            <p className="text-sm text-gray-500">No products yet. Add your first product above.</p>
-          ) : (
-            <div className="space-y-4">
-              {products.map((product) => (
-                <div key={product._id} className="rounded-xl border border-gray-200 p-4">
-                  {editingId === product._id ? (
-                    <div className="space-y-3">
-                      <input
-                        type="text"
-                        className="w-full border rounded-lg p-2 text-sm"
-                        value={editDraft.name}
-                        onChange={(e) => setEditDraft({ ...editDraft, name: e.target.value })}
-                      />
-                      <div className="flex gap-3">
-                        <input
-                          type="number"
-                          placeholder="Price"
-                          className="w-32 border rounded-lg p-2 text-sm"
-                          value={editDraft.price}
-                          onChange={(e) => setEditDraft({ ...editDraft, price: e.target.value })}
-                        />
-                        <label className="flex items-center gap-2 text-sm cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={editDraft.isFeatured}
-                            onChange={(e) => setEditDraft({ ...editDraft, isFeatured: e.target.checked })}
-                          />
-                          Featured
-                        </label>
-                      </div>
-                      <textarea
-                        rows={2}
-                        className="w-full border rounded-lg p-2 text-sm"
-                        value={editDraft.description}
-                        onChange={(e) => setEditDraft({ ...editDraft, description: e.target.value })}
-                      />
-
-                      {/* Existing images */}
-                      {product.images.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {product.images.map((img) => (
-                            <div key={img.publicId} className="relative">
-                              <img src={img.url} className="w-20 h-20 object-cover rounded-md" />
-                              <button
-                                onClick={() => void handleDeleteProductImage(product._id, img.publicId)}
-                                className="absolute -top-1 -right-1 bg-black text-white rounded-full w-5 h-5 text-xs flex items-center justify-center cursor-pointer"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      <ImageUploader
-                        label="Add more images"
-                        multiple={true}
-                        onUpload={(newFiles) =>
-                          setEditDraft((prev) => ({
-                            ...prev,
-                            files: [...prev.files, ...newFiles],
-                            previews: [...prev.previews, ...newFiles.map((f) => URL.createObjectURL(f))],
-                          }))
-                        }
-                      />
-                      <p className="text-xs text-gray-400 mt-3">Square or landscape, max 2 MB each</p>
-                      {editDraft.previews.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {editDraft.previews.map((src, i) => (
-                            <img
-                              key={i}
-                              src={src}
-                              onClick={() => setPreviewSrc(src)}
-                              className="w-16 h-16 object-cover rounded-md cursor-pointer border border-gray-200"
-                            />
-                          ))}
-                        </div>
-                      )}
-
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => void handleSaveProduct()}
-                          disabled={isProductSaving || !editDraft.name.trim()}
-                          className="rounded-lg bg-brand-primary px-3 py-1.5 text-sm text-white hover:bg-brand-secondary disabled:opacity-50 cursor-pointer"
-                        >
-                          {isProductSaving ? "Saving..." : "Save"}
-                        </button>
-                        <button
-                          onClick={() => { setEditingId(null); setEditDraft(emptyDraft()); }}
-                          className="rounded-lg bg-gray-200 px-3 py-1.5 text-sm text-gray-700 cursor-pointer"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex gap-4">
-                      {product.images.length > 0 && (
-                        <div className="relative flex-shrink-0 w-20 h-20">
-                          <img
-                            src={product.images[productImageIndex[product._id] ?? 0]?.url}
-                            className="w-20 h-20 object-cover rounded-md cursor-pointer"
-                            onClick={() => setPreviewSrc(product.images[productImageIndex[product._id] ?? 0]?.url)}
-                          />
-                          {product.images.length > 1 && (
-                            <>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setProductImageIndex((prev) => {
-                                    const cur = prev[product._id] ?? 0;
-                                    return { ...prev, [product._id]: (cur - 1 + product.images.length) % product.images.length };
-                                  });
-                                }}
-                                className="absolute left-0 top-1/2 -translate-y-1/2 bg-black/50 text-white text-xs px-1 rounded cursor-pointer leading-none py-1"
-                              >‹</button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setProductImageIndex((prev) => {
-                                    const cur = prev[product._id] ?? 0;
-                                    return { ...prev, [product._id]: (cur + 1) % product.images.length };
-                                  });
-                                }}
-                                className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/50 text-white text-xs px-1 rounded cursor-pointer leading-none py-1"
-                              >›</button>
-                              <span className="absolute bottom-0 left-0 right-0 text-center text-white text-[10px] bg-black/40 rounded-b-md leading-4">
-                                {(productImageIndex[product._id] ?? 0) + 1}/{product.images.length}
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <p className="font-medium text-gray-900">{product.name}</p>
-                            {typeof product.price === "number" && (
-                              <p className="text-brand-primary text-sm">${product.price}</p>
-                            )}
-                            {product.isFeatured && (
-                              <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Featured</span>
-                            )}
-                            {product.description && (
-                              <p className="text-gray-600 text-sm mt-1 line-clamp-2">{product.description}</p>
-                            )}
-                          </div>
-                          <div className="flex gap-2 flex-shrink-0">
-                            <button
-                              onClick={() => startEdit(product)}
-                              className="text-sm text-gray-600 hover:text-gray-900 cursor-pointer border rounded px-2 py-1"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => void handleDeleteProduct(product._id)}
-                              className="text-sm text-red-600 hover:text-red-800 cursor-pointer border border-red-200 rounded px-2 py-1"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Categories */}
+          <div className="bg-white p-6 rounded-xl shadow-md space-y-4">
+            <h2 className="font-semibold">Categories <span className="text-red-500">*</span></h2>
+            <div className="flex flex-wrap gap-3">
+              {dedupeCategories([
+                ...categoryOptions.map((c) => c.name),
+                ...shopData.categories,
+              ]).map((cat) => (
+                <label key={cat} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={shopData.categories.includes(cat)}
+                    onChange={() => toggleCategory(cat)}
+                  />
+                  {cat}
+                </label>
+              ))}
+              {isCategoriesLoading && <p className="text-sm text-gray-500">Loading categories...</p>}
+            </div>
+            <div className="flex gap-2 mt-2">
+              <input
+                type="text"
+                placeholder="Add new category"
+                className="border p-2 rounded-lg flex-1"
+                value={shopData.newCategory}
+                onChange={(e) => setShopData({ ...shopData, newCategory: e.target.value })}
+              />
+              <button onClick={addNewCategory} className="px-4 py-2 bg-black text-white rounded-lg cursor-pointer">
+                Add
+              </button>
+            </div>
+          </div>
+
+          {/* Products */}
+          {shopId && (
+            <div className="bg-white p-6 rounded-xl shadow-md space-y-6">
+              <h2 className="font-semibold">Products</h2>
+
+              {/* Add product form */}
+              <div className="rounded-xl border border-dashed border-gray-300 p-4 space-y-3">
+                <p className="text-sm font-medium text-gray-700">Add a product</p>
+                <input
+                  type="text"
+                  placeholder="Product name *"
+                  className="w-full border rounded-lg p-2 text-sm"
+                  value={newDraft.name}
+                  onChange={(e) => setNewDraft({ ...newDraft, name: e.target.value })}
+                />
+                <div className="flex gap-3">
+                  <input
+                    type="number"
+                    placeholder="Price"
+                    className="w-32 border rounded-lg p-2 text-sm"
+                    value={newDraft.price}
+                    onChange={(e) => setNewDraft({ ...newDraft, price: e.target.value })}
+                  />
+                  <label className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newDraft.isFeatured}
+                      onChange={(e) => setNewDraft({ ...newDraft, isFeatured: e.target.checked })}
+                    />
+                    Featured
+                  </label>
+                </div>
+                <textarea
+                  rows={2}
+                  placeholder="Description"
+                  className="w-full border rounded-lg p-2 text-sm"
+                  value={newDraft.description}
+                  onChange={(e) => setNewDraft({ ...newDraft, description: e.target.value })}
+                />
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div>
+                    <ImageUploader
+                      label="Add Images"
+                      multiple={true}
+                      onUpload={(newFiles) =>
+                        setNewDraft((prev) => ({
+                          ...prev,
+                          files: [...prev.files, ...newFiles],
+                          previews: [...prev.previews, ...newFiles.map((f) => URL.createObjectURL(f))],
+                        }))
+                      }
+                    />
+                    <p className="text-xs text-gray-400 mt-3">Square or landscape, max 2 MB each</p>
+                  </div>
+                  <button
+                    onClick={() => void handleAddProduct()}
+                    disabled={isProductSaving || !newDraft.name.trim()}
+                    className="rounded-lg bg-brand-primary px-4 py-2 text-sm text-white hover:bg-brand-secondary disabled:opacity-50 cursor-pointer"
+                  >
+                    {isProductSaving ? "Saving..." : "Add Product"}
+                  </button>
+                </div>
+                {newDraft.previews.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {newDraft.previews.map((src, i) => (
+                      <img
+                        key={i}
+                        src={src}
+                        onClick={() => setPreviewSrc(src)}
+                        className="w-16 h-16 object-cover rounded-md cursor-pointer border border-gray-200"
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Product list */}
+              {products.length === 0 ? (
+                <p className="text-sm text-gray-500">No products yet. Add your first product above.</p>
+              ) : (
+                <div className="space-y-4">
+                  {products.map((product) => (
+                    <div key={product._id} className="rounded-xl border border-gray-200 p-4">
+                      {editingId === product._id ? (
+                        <div className="space-y-3">
+                          <input
+                            type="text"
+                            className="w-full border rounded-lg p-2 text-sm"
+                            value={editDraft.name}
+                            onChange={(e) => setEditDraft({ ...editDraft, name: e.target.value })}
+                          />
+                          <div className="flex gap-3">
+                            <input
+                              type="number"
+                              placeholder="Price"
+                              className="w-32 border rounded-lg p-2 text-sm"
+                              value={editDraft.price}
+                              onChange={(e) => setEditDraft({ ...editDraft, price: e.target.value })}
+                            />
+                            <label className="flex items-center gap-2 text-sm cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={editDraft.isFeatured}
+                                onChange={(e) => setEditDraft({ ...editDraft, isFeatured: e.target.checked })}
+                              />
+                              Featured
+                            </label>
+                          </div>
+                          <textarea
+                            rows={2}
+                            className="w-full border rounded-lg p-2 text-sm"
+                            value={editDraft.description}
+                            onChange={(e) => setEditDraft({ ...editDraft, description: e.target.value })}
+                          />
+
+                          {/* Existing images */}
+                          {product.images.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {product.images.map((img) => (
+                                <div key={img.publicId} className="relative">
+                                  <img src={img.url} className="w-20 h-20 object-cover rounded-md" />
+                                  <button
+                                    onClick={() => void handleDeleteProductImage(product._id, img.publicId)}
+                                    className="absolute -top-1 -right-1 bg-black text-white rounded-full w-5 h-5 text-xs flex items-center justify-center cursor-pointer"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          <ImageUploader
+                            label="Add more images"
+                            multiple={true}
+                            onUpload={(newFiles) =>
+                              setEditDraft((prev) => ({
+                                ...prev,
+                                files: [...prev.files, ...newFiles],
+                                previews: [...prev.previews, ...newFiles.map((f) => URL.createObjectURL(f))],
+                              }))
+                            }
+                          />
+                          <p className="text-xs text-gray-400 mt-3">Square or landscape, max 2 MB each</p>
+                          {editDraft.previews.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {editDraft.previews.map((src, i) => (
+                                <img
+                                  key={i}
+                                  src={src}
+                                  onClick={() => setPreviewSrc(src)}
+                                  className="w-16 h-16 object-cover rounded-md cursor-pointer border border-gray-200"
+                                />
+                              ))}
+                            </div>
+                          )}
+
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => void handleSaveProduct()}
+                              disabled={isProductSaving || !editDraft.name.trim()}
+                              className="rounded-lg bg-brand-primary px-3 py-1.5 text-sm text-white hover:bg-brand-secondary disabled:opacity-50 cursor-pointer"
+                            >
+                              {isProductSaving ? "Saving..." : "Save"}
+                            </button>
+                            <button
+                              onClick={() => { setEditingId(null); setEditDraft(emptyDraft()); }}
+                              className="rounded-lg bg-gray-200 px-3 py-1.5 text-sm text-gray-700 cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex gap-4">
+                          {product.images.length > 0 && (
+                            <div className="relative flex-shrink-0 w-20 h-20">
+                              <img
+                                src={product.images[productImageIndex[product._id] ?? 0]?.url}
+                                className="w-20 h-20 object-cover rounded-md cursor-pointer"
+                                onClick={() => setPreviewSrc(product.images[productImageIndex[product._id] ?? 0]?.url)}
+                              />
+                              {product.images.length > 1 && (
+                                <>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setProductImageIndex((prev) => {
+                                        const cur = prev[product._id] ?? 0;
+                                        return { ...prev, [product._id]: (cur - 1 + product.images.length) % product.images.length };
+                                      });
+                                    }}
+                                    className="absolute left-0 top-1/2 -translate-y-1/2 bg-black/50 text-white text-xs px-1 rounded cursor-pointer leading-none py-1"
+                                  >‹</button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setProductImageIndex((prev) => {
+                                        const cur = prev[product._id] ?? 0;
+                                        return { ...prev, [product._id]: (cur + 1) % product.images.length };
+                                      });
+                                    }}
+                                    className="absolute right-0 top-1/2 -translate-y-1/2 bg-black/50 text-white text-xs px-1 rounded cursor-pointer leading-none py-1"
+                                  >›</button>
+                                  <span className="absolute bottom-0 left-0 right-0 text-center text-white text-[10px] bg-black/40 rounded-b-md leading-4">
+                                    {(productImageIndex[product._id] ?? 0) + 1}/{product.images.length}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <p className="font-medium text-gray-900">{product.name}</p>
+                                {typeof product.price === "number" && (
+                                  <p className="text-brand-primary text-sm">${product.price}</p>
+                                )}
+                                {product.isFeatured && (
+                                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Featured</span>
+                                )}
+                                {product.description && (
+                                  <p className="text-gray-600 text-sm mt-1 line-clamp-2">{product.description}</p>
+                                )}
+                              </div>
+                              <div className="flex gap-2 flex-shrink-0">
+                                <button
+                                  onClick={() => startEdit(product)}
+                                  className="text-sm text-gray-600 hover:text-gray-900 cursor-pointer border rounded px-2 py-1"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => void handleDeleteProduct(product._id)}
+                                  className="text-sm text-red-600 hover:text-red-800 cursor-pointer border border-red-200 rounded px-2 py-1"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
-        </div>
-      )}
+
+        </div> {/* end left column */}
+
+        {/* Right column */}
+        <div className="space-y-6">
+
+          {/* Visibility */}
+          <div className="bg-white p-6 rounded-xl shadow-md space-y-3">
+            <h2 className="font-semibold">Visibility</h2>
+            <div className="flex items-center justify-between">
+              <span className={`text-sm font-medium px-2.5 py-1 rounded-full ${isPublished ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>
+                {isPublished ? "Published" : "Draft"}
+              </span>
+              <button
+                onClick={() => setVisibilityModal(isPublished ? "unpublish" : "publish")}
+                className={`text-sm px-3 py-1.5 rounded-lg cursor-pointer ${isPublished ? "bg-gray-200 text-gray-700 hover:bg-gray-300" : "bg-brand-primary text-white hover:bg-brand-secondary"}`}
+              >
+                {isPublished ? "Unpublish" : "Publish"}
+              </button>
+            </div>
+          </div>
+
+          {/* Logo */}
+          <div className="bg-white p-6 rounded-xl shadow-md space-y-4">
+            <h2 className="font-semibold">Logo <span className="text-red-500">*</span></h2>
+            <p className="text-xs text-gray-400">Square, min 200×200 px, max 1 MB</p>
+            <ImageUploader label="Upload Logo" onUpload={handleLogoUpload} />
+            {logo && (
+              <img
+                src={logo}
+                alt="Logo preview"
+                className="mt-3 h-24 w-24 object-contain rounded-xl border cursor-pointer"
+                onClick={() => setPreviewSrc(logo)}
+              />
+            )}
+          </div>
+
+          {/* Hero Image */}
+          <div className="bg-white p-6 rounded-xl shadow-md space-y-4">
+            <h2 className="font-semibold">Hero Image <span className="text-red-500">*</span></h2>
+            <p className="text-xs text-gray-400">Landscape 16:9, min 1200×675 px, max 3 MB</p>
+            <ImageUploader label="Upload Hero" onUpload={handleHeroUpload} />
+            {hero && (
+              <img
+                src={hero}
+                alt="Hero preview"
+                className="mt-3 w-full h-32 object-cover rounded-xl border cursor-pointer"
+                onClick={() => setPreviewSrc(hero)}
+              />
+            )}
+          </div>
+
+        </div> {/* end right column */}
+
+      </div> {/* end grid */}
 
       {/* Action Buttons */}
       <div className="flex justify-between">
