@@ -57,7 +57,6 @@ export default function ShopEditorPage() {
     location: "",
     hasDelivery: false,
     categories: [] as string[],
-    newCategory: "",
     contact: {
       phone: "",
       email: "",
@@ -136,54 +135,6 @@ export default function ShopEditorPage() {
           : [...prev.categories, cat],
       };
     });
-  };
-
-  const addNewCategory = () => {
-    void (async () => {
-      const cat = shopData.newCategory.trim();
-      if (!cat) return;
-
-      try {
-        const res = await apiFetch(
-          "/api/categories",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: cat }),
-          },
-          getAccessTokenSilently
-        );
-
-        if (!res.ok) throw new Error("Failed to create category");
-
-        const category = await res.json();
-        const categoryName =
-          typeof category?.name === "string" ? category.name.trim() : cat;
-
-        setCategoryOptions((prev) => {
-          const next = [...prev];
-          const exists = next.some(
-            (item) => item.slug.toLowerCase() === String(category?.slug || "").toLowerCase()
-          );
-          if (!exists) {
-            next.push({
-              name: categoryName,
-              slug: category?.slug || categoryName.toLowerCase(),
-            });
-          }
-          return next.sort((a, b) => a.name.localeCompare(b.name));
-        });
-
-        setShopData((prev) => ({
-          ...prev,
-          categories: dedupeCategories([...prev.categories, categoryName]),
-          newCategory: "",
-        }));
-      } catch (error) {
-        console.error(error);
-        setToast("Failed to add category.");
-      }
-    })();
   };
 
   const updateContactField = (field: string, value: string) => {
@@ -737,18 +688,6 @@ export default function ShopEditorPage() {
                 </label>
               ))}
               {isCategoriesLoading && <p className="text-sm text-gray-500">Loading categories...</p>}
-            </div>
-            <div className="flex gap-2 mt-2">
-              <input
-                type="text"
-                placeholder="Add new category"
-                className="border p-2 rounded-lg flex-1"
-                value={shopData.newCategory}
-                onChange={(e) => setShopData({ ...shopData, newCategory: e.target.value })}
-              />
-              <button onClick={addNewCategory} className="px-4 py-2 bg-black text-white rounded-lg cursor-pointer">
-                Add
-              </button>
             </div>
           </div>
 

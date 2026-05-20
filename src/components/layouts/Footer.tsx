@@ -37,7 +37,7 @@ const Footer: FC = () => {
             <img src="/logo-transparent.png" alt="Qaoni Logo" className="h-auto w-50" />
           </div>
           <p className="text-gray-300 text-sm text-left">
-            Qaoni is the universe of small businesses
+            Qaoni the universe of small businesses
           </p>
         </div>
 

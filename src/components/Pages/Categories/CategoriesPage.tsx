@@ -69,8 +69,8 @@ const CategoriesPage = () => {
     };
   }, []);
 
-  const filteredCategories = categories.filter((cat) =>
-    cat.name.toLowerCase().includes(query.toLowerCase())
+  const filteredCategories = categories.filter(
+    (cat) => cat.shopCount > 0 && cat.name.toLowerCase().includes(query.toLowerCase())
   );
 
   return (
@@ -81,7 +81,7 @@ const CategoriesPage = () => {
       </div>
 
       {/* Categories Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 lg:gap-10">
         {isLoading && (
           <p className="text-gray-500 text-center col-span-full">
             Loading categories...
