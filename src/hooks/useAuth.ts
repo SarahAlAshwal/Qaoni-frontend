@@ -8,6 +8,7 @@ export interface AuthUser {
   email: string;
   name: string;
   role: UserRole;
+  emailVerified: boolean;
 }
 
 export const useAuth = () => {
@@ -31,7 +32,8 @@ export const useAuth = () => {
     id: user.sub || '',
     email: user.email || '',
     name: user.name || '',
-    role: getUserRole()
+    role: getUserRole(),
+    emailVerified: user.email_verified === true,
   } : null;
 
   const isAdmin = () => {

@@ -9,6 +9,7 @@ import CategoriesPage from "./components/Pages/Categories/CategoriesPage";
 import CategoryDetailsPage from "./components/Pages/Categories/CategoryDetailsPage";
 import ShopDetailsPage from "./components/Pages/Shops/ShopDetailsPage";
 import ShopEditorPage from "./components/Pages/Shops/ShopsEditor";
+import AgreementGate from "./components/Pages/Shops/AgreementGate";
 import AdminPage from "./components/Pages/Admin/AdminPage";
 import AboutPage from "./components/Pages/AboutPage";
 import ContactPage from "./components/Pages/ContactPage";
@@ -28,7 +29,9 @@ function App() {
             path="/my-space"
             element={
               <ProtectedRoute requiredRole="shop_owner">
-                <ShopEditorPage />
+                <AgreementGate>
+                  <ShopEditorPage />
+                </AgreementGate>
               </ProtectedRoute>
             }
           />
