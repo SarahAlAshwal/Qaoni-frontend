@@ -1,8 +1,18 @@
-import { writeFileSync } from 'fs';
+import { writeFileSync, readFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Load .env when running locally (Hostinger injects env vars directly)
+const envFile = join(__dirname, '../.env');
+if (existsSync(envFile)) {
+  readFileSync(envFile, 'utf-8').split('\n').forEach((line) => {
+    const eq = line.indexOf('=');
+    if (eq > 0) process.env[line.slice(0, eq).trim()] ??= line.slice(eq + 1).trim();
+  });
+}
+
 const SITE_URL = 'https://www.qaoni.ca';
 const API_URL = process.env.VITE_API_URL;
 if (!API_URL) throw new Error('VITE_API_URL is not set');
