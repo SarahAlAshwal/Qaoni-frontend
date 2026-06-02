@@ -15,12 +15,14 @@ interface SlideshowProps {
   slides: Slide[];
   autoPlay?: boolean;
   interval?: number;
+  isLoading?: boolean;
 }
 
 export default function Slideshow({
   slides,
   autoPlay = true,
   interval = 6000,
+  isLoading = false,
 }: SlideshowProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -59,6 +61,15 @@ export default function Slideshow({
     },
     trackMouse: true,
   });
+
+  if (isLoading) {
+    return (
+      <div
+        className="w-full rounded-2xl bg-gray-200 animate-pulse shadow-lg"
+        style={{ maxHeight: "500px", minHeight: "300px", height: "45vh" }}
+      />
+    );
+  }
 
   if (slides.length === 0) {
     return (
