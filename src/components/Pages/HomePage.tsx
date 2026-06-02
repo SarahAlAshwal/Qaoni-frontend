@@ -83,6 +83,8 @@ const HomePage: FC = () => {
 
   return(
         <main className="flex-grow">
+            <title>Qaoni | Discover Local Businesses in Your Community</title>
+            <meta name="description" content="Qaoni is the universe of small businesses — discover and support local shops, artisans, and service providers all in one place." />
             <Slideshow slides={slides} />
             {isLoading ? (
               <section className="py-12 text-center text-gray-500">

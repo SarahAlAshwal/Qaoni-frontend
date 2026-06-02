@@ -14,8 +14,8 @@ if (existsSync(envFile)) {
 }
 
 const SITE_URL = 'https://www.qaoni.ca';
-const API_URL = process.env.VITE_API_URL;
-if (!API_URL) throw new Error('VITE_API_URL is not set');
+const API_URL = process.env.SITEMAP_API_URL || process.env.VITE_API_URL;
+if (!API_URL) throw new Error('SITEMAP_API_URL (or VITE_API_URL) is not set');
 
 const staticRoutes = [
   { url: '/',            priority: '1.0', changefreq: 'daily'   },

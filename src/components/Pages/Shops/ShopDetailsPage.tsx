@@ -134,9 +134,14 @@ export default function ShopDetailsPage() {
   const heroUrl = typeof shop.heroImage === "string" ? shop.heroImage : shop.heroImage?.url;
   const logoUrl = typeof shop.logo === "string" ? shop.logo : shop.logo?.url;
   const featuredProducts = products.filter((p) => p.isFeatured);
+  const metaDescription = shop.description.length > 155
+    ? shop.description.slice(0, 152) + "..."
+    : shop.description;
 
   return (
     <div className="flex flex-col">
+      <title>{shop.name} | Qaoni</title>
+      <meta name="description" content={metaDescription} />
       {heroUrl ? (
         <section className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden">
           <img src={heroUrl} alt={shop.name} className="w-full h-full object-cover" />

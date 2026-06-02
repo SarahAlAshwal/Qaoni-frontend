@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 export default function AboutPage() {
   return (
     <div className="flex flex-col">
+      <title>About Us | Qaoni</title>
+      <meta name="description" content="Qaoni brings local shops, artisans, and service providers together in one place — making it easy to discover and support the businesses that make your community unique." />
 
       {/* Hero */}
       <section className="bg-brand-primary text-white py-24 px-6 text-center">
