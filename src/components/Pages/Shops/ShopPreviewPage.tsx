@@ -86,8 +86,8 @@ export default function ShopPreviewPage({
     <div className="flex flex-col bg-gray-100 min-h-screen">
 
       {/* Top Bar */}
-      <div className="w-full bg-white shadow p-4 flex justify-between items-center sticky top-0 z-50">
-        <div className="flex items-center gap-3">
+      <div className="w-full bg-white shadow px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between sticky top-0 z-50 gap-2">
+        <div className="flex items-center gap-3 flex-wrap">
           <h1 className="text-xl font-bold">{modeTitle}</h1>
           {statusLabel ? (
             <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700">

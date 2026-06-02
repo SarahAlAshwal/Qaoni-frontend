@@ -81,7 +81,7 @@ const Header: FC = () => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="min-[830px]:hidden absolute top-full left-0 w-full bg-white border-t border-gray-200 shadow-md z-50">
+        <div className="min-[830px]:hidden absolute top-full left-0 w-full bg-white border-t border-gray-200 shadow-md z-[200]">
           <nav className="flex flex-col space-y-4 px-6 py-4 text-gray-700 font-medium">
             <Link to="/" className="hover:text-brand-secondary transition-colors" onClick={() => setIsOpen(false)}>Home</Link>
             <Link to="/businesses" className="hover:text-brand-secondary transition-colors" onClick={() => setIsOpen(false)}>Businesses</Link>
