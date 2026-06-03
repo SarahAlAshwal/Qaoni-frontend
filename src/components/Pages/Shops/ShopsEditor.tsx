@@ -410,9 +410,8 @@ export default function ShopEditorPage() {
       { label: "Description", ok: Boolean(shopData.description.trim()) },
       { label: "At least one category", ok: shopData.categories.length > 0 },
       { label: "Logo", ok: Boolean(logo) },
-      { label: "Hero image", ok: Boolean(hero) },
     ],
-    [hero, logo, shopData.categories.length, shopData.description, shopData.name]
+    [logo, shopData.categories.length, shopData.description, shopData.name]
   );
 
   const canPublish = publishChecks.every((check) => check.ok);
@@ -983,7 +982,7 @@ export default function ShopEditorPage() {
 
           {/* Hero Image */}
           <div className="bg-white p-6 rounded-xl shadow-md space-y-4">
-            <h2 className="font-semibold">Hero Image <span className="text-red-500">*</span></h2>
+            <h2 className="font-semibold">Hero Image</h2>
             <p className="text-xs text-gray-400">Landscape 16:9, min 1200×675 px, max 3 MB</p>
             <ImageUploader label="Upload Hero" onUpload={handleHeroUpload} />
             {hero && (
