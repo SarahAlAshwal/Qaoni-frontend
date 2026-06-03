@@ -5,6 +5,7 @@ import instagramIcon from "../../../assets/instagram.svg";
 import whatsappIcon from "../../../assets/whatsapp.svg";
 import tiktokIcon from "../../../assets/tiktok.svg";
 import { apiFetch } from "../../../services/api";
+import { heroNameSize } from "../../../utils/nameSize";
 
 interface ProductImage {
   url: string;
@@ -146,7 +147,7 @@ export default function ShopDetailsPage() {
         <section className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden">
           <img src={heroUrl} alt={shop.name} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-center text-white px-4">
-            <h1 className="text-3xl md:text-5xl font-bold mb-3">{shop.name}</h1>
+            <h1 className={`${heroNameSize(shop.name)} font-bold mb-3`}>{shop.name}</h1>
             <div className="flex gap-2 flex-wrap justify-center">
               {shop.categories.map((cat) => (
                 <span key={cat} className="bg-brand-secondary text-white px-3 py-1 rounded-full text-sm">{cat}</span>
@@ -162,7 +163,7 @@ export default function ShopDetailsPage() {
       ) : (
         <section className="relative h-[40vh] md:h-[50vh] w-full bg-black flex items-center justify-center text-center text-white px-4">
           <div>
-            <h1 className="text-3xl md:text-5xl font-bold mb-3">{shop.name}</h1>
+            <h1 className={`${heroNameSize(shop.name)} font-bold mb-3`}>{shop.name}</h1>
             <div className="flex gap-2 flex-wrap justify-center">
               {shop.categories.map((cat) => (
                 <span key={cat} className="bg-brand-primary text-white px-3 py-1 rounded-full text-sm">{cat}</span>

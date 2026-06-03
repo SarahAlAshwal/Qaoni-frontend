@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
+import { shopNameSize } from "../../../utils/nameSize";
 
 export interface Shop {
   id: string;
@@ -85,7 +86,7 @@ useEffect(() => {
 
       {/* Centered Content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-4">
-        <h3 className="text-xl font-bold drop-shadow-lg">{shop.name}</h3>
+        <h3 className={`${shopNameSize(shop.name)} font-bold drop-shadow-lg`}>{shop.name}</h3>
         <p className="text-sm mt-2 line-clamp-2 drop-shadow-md max-w-[90%]">
           {shop.description}
         </p>

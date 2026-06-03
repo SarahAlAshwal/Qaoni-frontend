@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { heroNameSize } from "../../../utils/nameSize";
 import instagramIcon from '../../../assets/instagram.svg';
 import facebookIcon from '../../../assets/facebook.svg';
 import whatsappIcon from '../../../assets/whatsapp.svg';
@@ -134,7 +135,7 @@ export default function ShopPreviewPage({
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center text-center text-white px-4">
-            <h1 className="text-3xl md:text-5xl font-bold mb-3">
+            <h1 className={`${heroNameSize(data.name)} font-bold mb-3`}>
               {data.name}
             </h1>
 
@@ -160,7 +161,7 @@ export default function ShopPreviewPage({
       ) : (
         <section className="relative h-[40vh] md:h-[50vh] w-full bg-black flex items-center justify-center text-center text-white px-4">
           <div>
-            <h1 className="text-3xl md:text-5xl font-bold mb-3">
+            <h1 className={`${heroNameSize(data.name)} font-bold mb-3`}>
               {data.name}
             </h1>
             <div className="flex gap-2 flex-wrap justify-center">

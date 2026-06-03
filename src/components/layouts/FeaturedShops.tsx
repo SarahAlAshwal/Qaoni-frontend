@@ -1,3 +1,5 @@
+import { shopNameSize } from "../../utils/nameSize";
+
 export interface Shop {
   id: string;
   name: string;
@@ -33,7 +35,7 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
               alt={`${shop.name} logo`}
               className="w-full h-28 object-contain mb-3"
             />
-            <p className="text-base font-semibold text-gray-800">{shop.name}</p>
+            <p className={`${shopNameSize(shop.name)} font-semibold text-gray-800`}>{shop.name}</p>
             <a
               href={shop.link}
               className="mt-2 px-4 py-1 bg-brand-primary text-white text-sm rounded-md font-medium hover:bg-brand-secondary transition"
@@ -66,7 +68,7 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
               alt={`${shop.name} logo`}
               className="w-full h-28 object-contain mb-3"
             />
-            <p className="text-base font-semibold text-gray-800">{shop.name}</p>
+            <p className={`${shopNameSize(shop.name)} font-semibold text-gray-800`}>{shop.name}</p>
             <a
               href={shop.link}
               className="mt-2 px-4 py-1 bg-brand-primary text-white text-sm rounded-md font-medium hover:bg-brand-secondary transition"
@@ -106,7 +108,7 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
                          bg-brand-primary/70 opacity-0 group-hover:opacity-100 
                          transition-opacity duration-300 text-white"
             >
-              <p className="text-lg font-semibold mb-2">{shop.name}</p>
+              <p className={`${shopNameSize(shop.name)} font-semibold mb-2`}>{shop.name}</p>
               <span className="px-3 py-1 bg-white text-brand-primary text-sm rounded-md font-medium hover:bg-brand-accent/30">
                 Visit
               </span>
