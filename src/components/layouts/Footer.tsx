@@ -53,7 +53,6 @@ const Footer: FC = () => {
         <FooterSection title="Follow Us">
           <li><a href="https://www.facebook.com/profile.php?id=61590482161540" target="_blank" rel="noopener noreferrer" className="hover:text-brand-secondary">Facebook</a></li>
           <li><a href="https://www.instagram.com/qaoni_ca/" target="_blank" rel="noopener noreferrer" className="hover:text-brand-secondary">Instagram</a></li>
-          <li><a href="#" className="hover:text-brand-secondary">Twitter</a></li>
         </FooterSection>
 
       </div>
