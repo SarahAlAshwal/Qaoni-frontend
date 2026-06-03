@@ -166,7 +166,7 @@ export default function ShopDetailsPage() {
             <h1 className={`${heroNameSize(shop.name)} font-bold mb-3`}>{shop.name}</h1>
             <div className="flex gap-2 flex-wrap justify-center">
               {shop.categories.map((cat) => (
-                <span key={cat} className="bg-brand-primary text-white px-3 py-1 rounded-full text-sm">{cat}</span>
+                <span key={cat} className="bg-brand-secondary text-white px-3 py-1 rounded-full text-sm">{cat}</span>
               ))}
             </div>
             {shop.hasDelivery && (

@@ -168,7 +168,7 @@ export default function ShopPreviewPage({
               {data.categories.map((cat) => (
                 <span
                   key={cat}
-                  className="bg-brand-primary text-white px-3 py-1 rounded-full text-sm"
+                  className="bg-brand-secondary text-white px-3 py-1 rounded-full text-sm"
                 >
                   {cat}
                 </span>
