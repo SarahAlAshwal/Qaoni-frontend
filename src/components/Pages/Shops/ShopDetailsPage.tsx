@@ -180,7 +180,7 @@ export default function ShopDetailsPage() {
 
       <section className="container mx-auto px-6 pt-4 pb-10">
         {logoUrl && (
-          <div className="relative z-10 w-fit min-w-20 md:min-w-28 max-w-36 md:max-w-48 -mt-12 md:-mt-16 mb-6 rounded-2xl border-4 border-white shadow-lg overflow-hidden">
+          <div className="relative z-10 w-fit min-w-20 md:min-w-28 max-w-36 md:max-w-48 mt-4 md:-mt-16 mb-6 rounded-2xl border-4 border-white shadow-lg overflow-hidden">
             <img src={logoUrl} alt={`${shop.name} logo`} className="w-full h-auto block" />
           </div>
         )}
