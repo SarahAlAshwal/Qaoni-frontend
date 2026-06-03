@@ -692,9 +692,12 @@ export default function ShopEditorPage() {
           </div>
 
           {/* Products */}
-          {shopId && (
-            <div className="bg-white p-6 rounded-xl shadow-md space-y-6">
+          <div className="bg-white p-6 rounded-xl shadow-md space-y-6">
               <h2 className="font-semibold">Products</h2>
+              {!shopId && (
+                <p className="text-sm text-gray-500">Save your shop info first to start adding products.</p>
+              )}
+              {shopId && (<>
 
               {/* Add product form */}
               <div className="rounded-xl border border-dashed border-gray-300 p-4 space-y-3">
@@ -938,8 +941,9 @@ export default function ShopEditorPage() {
                   ))}
                 </div>
               )}
-            </div>
+            </>
           )}
+          </div>
 
         </div> {/* end left column */}
 
