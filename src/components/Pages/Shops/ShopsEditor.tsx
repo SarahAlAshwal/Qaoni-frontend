@@ -691,7 +691,15 @@ export default function ShopEditorPage() {
 
           {/* Categories */}
           <div className="bg-white p-6 rounded-xl shadow-md space-y-4">
-            <h2 className="font-semibold">Categories <span className="text-red-500">*</span></h2>
+            <div className="flex items-start justify-between gap-4">
+              <h2 className="font-semibold">Categories <span className="text-red-500">*</span></h2>
+              <p className="text-xs text-gray-400 text-right">
+                Don't see your category?{" "}
+                <a href="/contact" className="text-brand-secondary hover:underline">Contact us</a>
+                {" "}or email{" "}
+                <a href="mailto:info@qaoni.ca" className="text-brand-secondary hover:underline">info@qaoni.ca</a>
+              </p>
+            </div>
             <div className="flex flex-wrap gap-3">
               {dedupeCategories([
                 ...categoryOptions.map((c) => c.name),
