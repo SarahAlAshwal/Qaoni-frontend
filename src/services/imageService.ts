@@ -46,7 +46,8 @@ export async function saveImages(
   );
 
   if (!res.ok) {
-    throw new Error("Image upload failed");
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.message ?? "Image upload failed");
   }
 
   return res.json();

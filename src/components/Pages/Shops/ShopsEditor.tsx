@@ -29,6 +29,8 @@ interface CategoryOption {
   slug: string;
 }
 
+const PRODUCT_IMAGE_LIMIT = 20;
+
 const emptyDraft = (): ProductDraft => ({
   name: "",
   price: "",
@@ -103,6 +105,7 @@ export default function ShopEditorPage() {
   };
   const [isEditing, setIsEditing] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
+  const [imageLimitWarning, setImageLimitWarning] = useState(false);
 
   const [originalShop, setOriginalShop] = useState<{
     data: typeof shopData;
@@ -159,6 +162,13 @@ export default function ShopEditorPage() {
     const name = newDraft.name.trim();
     if (!name || !shopId) return;
 
+    const currentTotal = products.reduce((sum, p) => sum + p.images.length, 0);
+    if (newDraft.files.length > 0 && currentTotal + newDraft.files.length > PRODUCT_IMAGE_LIMIT) {
+      setImageLimitWarning(true);
+      setToast(`You've reached the ${PRODUCT_IMAGE_LIMIT}-image limit. Contact us to upgrade your storage.`);
+      return;
+    }
+
     try {
       setIsProductSaving(true);
       const price = newDraft.price.trim() !== "" ? Number(newDraft.price) : undefined;
@@ -200,7 +210,8 @@ export default function ShopEditorPage() {
       setToast("Product added.");
     } catch (error) {
       console.error(error);
-      setToast("Failed to add product.");
+      const msg = error instanceof Error ? error.message : null;
+      setToast(msg ? `${msg} — no changes were saved.` : "Something went wrong. No changes were saved.");
     } finally {
       setIsProductSaving(false);
     }
@@ -221,10 +232,30 @@ export default function ShopEditorPage() {
   const handleSaveProduct = async () => {
     if (!editingId || !shopId) return;
 
+    const currentTotal = products.reduce((sum, p) => sum + p.images.length, 0);
+    if (editDraft.files.length > 0 && currentTotal + editDraft.files.length > PRODUCT_IMAGE_LIMIT) {
+      setImageLimitWarning(true);
+      setToast(`You've reached the ${PRODUCT_IMAGE_LIMIT}-image limit. Contact us to upgrade your storage.`);
+      return;
+    }
+
     try {
       setIsProductSaving(true);
-      const price = editDraft.price.trim() !== "" ? Number(editDraft.price) : null;
 
+      // Upload images first — if this fails, product info is NOT saved
+      if (editDraft.files.length > 0) {
+        await saveImages(
+          {
+            files: editDraft.files,
+            entityType: "product",
+            entityId: editingId,
+            imageType: "product",
+          },
+          getAccessTokenSilently
+        );
+      }
+
+      const price = editDraft.price.trim() !== "" ? Number(editDraft.price) : null;
       await apiFetch(
         `/api/products/${editingId}`,
         {
@@ -240,25 +271,14 @@ export default function ShopEditorPage() {
         getAccessTokenSilently
       );
 
-      if (editDraft.files.length > 0) {
-        await saveImages(
-          {
-            files: editDraft.files,
-            entityType: "product",
-            entityId: editingId,
-            imageType: "product",
-          },
-          getAccessTokenSilently
-        );
-      }
-
       await loadProducts(shopId);
       setEditingId(null);
       setEditDraft(emptyDraft());
       setToast("Product updated.");
     } catch (error) {
       console.error(error);
-      setToast("Failed to update product.");
+      const msg = error instanceof Error ? error.message : null;
+      setToast(msg ? `${msg} — no changes were saved.` : "Something went wrong. No changes were saved.");
     } finally {
       setIsProductSaving(false);
     }
@@ -734,18 +754,26 @@ export default function ShopEditorPage() {
                 />
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
-                    <ImageUploader
-                      label="Add Images"
-                      multiple={true}
-                      onUpload={(newFiles) =>
-                        setNewDraft((prev) => ({
-                          ...prev,
-                          files: [...prev.files, ...newFiles],
-                          previews: [...prev.previews, ...newFiles.map((f) => URL.createObjectURL(f))],
-                        }))
-                      }
-                    />
-                    <p className="text-xs text-gray-400 mt-3">Square or landscape, max 2 MB each</p>
+                    {products.reduce((sum, p) => sum + p.images.length, 0) >= PRODUCT_IMAGE_LIMIT ? (
+                      <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                        You've reached the 20-image limit. <a href="/contact" className="underline font-medium">Contact us</a> to upgrade your storage.
+                      </p>
+                    ) : (
+                      <>
+                        <ImageUploader
+                          label="Add Images"
+                          multiple={true}
+                          onUpload={(newFiles) =>
+                            setNewDraft((prev) => ({
+                              ...prev,
+                              files: [...prev.files, ...newFiles],
+                              previews: [...prev.previews, ...newFiles.map((f) => URL.createObjectURL(f))],
+                            }))
+                          }
+                        />
+                        <p className="text-xs text-gray-400 mt-3">Square or landscape, max 2 MB each</p>
+                      </>
+                    )}
                   </div>
                   <button
                     onClick={() => void handleAddProduct()}
@@ -755,6 +783,11 @@ export default function ShopEditorPage() {
                     {isProductSaving ? "Saving..." : "Add Product"}
                   </button>
                 </div>
+                {(imageLimitWarning || products.reduce((sum, p) => sum + p.images.length, 0) >= PRODUCT_IMAGE_LIMIT) && (
+                  <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                    You've reached the {PRODUCT_IMAGE_LIMIT}-image limit. <a href="/contact" className="underline font-medium">Contact us</a> to upgrade your storage.
+                  </p>
+                )}
                 {newDraft.previews.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {newDraft.previews.map((src, i) => (
@@ -825,18 +858,26 @@ export default function ShopEditorPage() {
                             </div>
                           )}
 
-                          <ImageUploader
-                            label="Add more images"
-                            multiple={true}
-                            onUpload={(newFiles) =>
-                              setEditDraft((prev) => ({
-                                ...prev,
-                                files: [...prev.files, ...newFiles],
-                                previews: [...prev.previews, ...newFiles.map((f) => URL.createObjectURL(f))],
-                              }))
-                            }
-                          />
-                          <p className="text-xs text-gray-400 mt-3">Square or landscape, max 2 MB each</p>
+                          {products.reduce((sum, p) => sum + p.images.length, 0) >= PRODUCT_IMAGE_LIMIT ? (
+                            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                              You've reached the 20-image limit. <a href="/contact" className="underline font-medium">Contact us</a> to upgrade your storage.
+                            </p>
+                          ) : (
+                            <>
+                              <ImageUploader
+                                label="Add more images"
+                                multiple={true}
+                                onUpload={(newFiles) =>
+                                  setEditDraft((prev) => ({
+                                    ...prev,
+                                    files: [...prev.files, ...newFiles],
+                                    previews: [...prev.previews, ...newFiles.map((f) => URL.createObjectURL(f))],
+                                  }))
+                                }
+                              />
+                              <p className="text-xs text-gray-400 mt-3">Square or landscape, max 2 MB each</p>
+                            </>
+                          )}
                           {editDraft.previews.length > 0 && (
                             <div className="flex flex-wrap gap-2">
                               {editDraft.previews.map((src, i) => (
