@@ -71,7 +71,8 @@ export default function ShopsPage() {
                 .filter(
                   (category: any) =>
                     typeof category?.name === "string" &&
-                    typeof category?.slug === "string"
+                    typeof category?.slug === "string" &&
+                    (category?.shopCount ?? 0) > 0
                 )
                 .map((category: CategorySummary) => ({
                   label: category.name,
