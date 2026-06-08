@@ -854,7 +854,7 @@ export default function ShopEditorPage() {
                             <div className="flex flex-wrap gap-2">
                               {product.images.map((img) => (
                                 <div key={img.publicId} className="relative">
-                                  <img src={img.url} className="w-20 h-20 object-cover rounded-md" />
+                                  <img src={img.url} className="w-20 h-20 object-contain bg-gray-50 rounded-md" />
                                   <button
                                     onClick={() => void handleDeleteProductImage(product._id, img.publicId)}
                                     className="absolute -top-1 -right-1 bg-black text-white rounded-full w-5 h-5 text-xs flex items-center justify-center cursor-pointer"
@@ -921,7 +921,7 @@ export default function ShopEditorPage() {
                             <div className="relative flex-shrink-0 w-20 h-20">
                               <img
                                 src={product.images[productImageIndex[product._id] ?? 0]?.url}
-                                className="w-20 h-20 object-cover rounded-md cursor-pointer"
+                                className="w-20 h-20 object-contain bg-gray-50 rounded-md cursor-pointer"
                                 onClick={() => setPreviewSrc(product.images[productImageIndex[product._id] ?? 0]?.url)}
                               />
                               {product.images.length > 1 && (

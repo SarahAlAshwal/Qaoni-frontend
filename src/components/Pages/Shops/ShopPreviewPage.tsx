@@ -219,7 +219,7 @@ export default function ShopPreviewPage({
                       <img
                         src={product.images[idx].url}
                         alt={product.name}
-                        className="w-full h-48 object-cover cursor-pointer"
+                        className="w-full h-48 object-contain bg-gray-50 cursor-pointer"
                         onClick={() => setPreviewSrc(product.images[idx].url)}
                       />
                       {product.images.length > 1 && (

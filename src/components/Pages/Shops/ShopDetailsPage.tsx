@@ -203,7 +203,7 @@ export default function ShopDetailsPage() {
                 >
                   {product.images.length > 0 && (
                     <div className="relative h-48">
-                      <img src={product.images[idx].url} alt={product.name} className="w-full h-48 object-cover" />
+                      <img src={product.images[idx].url} alt={product.name} className="w-full h-48 object-contain bg-gray-50" />
                       {product.images.length > 1 && (
                         <>
                           <button
@@ -251,7 +251,7 @@ export default function ShopDetailsPage() {
                 >
                   {product.images.length > 0 && (
                     <div className="relative h-48">
-                      <img src={product.images[idx].url} alt={product.name} className="w-full h-48 object-cover" />
+                      <img src={product.images[idx].url} alt={product.name} className="w-full h-48 object-contain bg-gray-50" />
                       {product.images.length > 1 && (
                         <>
                           <button
