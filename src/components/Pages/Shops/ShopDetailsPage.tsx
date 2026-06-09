@@ -194,7 +194,7 @@ export default function ShopDetailsPage() {
             <h2 className="text-2xl font-semibold mb-6 text-gray-800">Featured Products</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {featuredProducts.map((product) => {
-                const idx = productImageIndex[product._id] ?? 0;
+                const idx = productImageIndex[`feat-${product._id}`] ?? 0;
                 return (
                 <div
                   key={product._id}
@@ -207,11 +207,11 @@ export default function ShopDetailsPage() {
                       {product.images.length > 1 && (
                         <>
                           <button
-                            onClick={(e) => { e.stopPropagation(); stepProductImage(product._id, product.images.length, -1); }}
+                            onClick={(e) => { e.stopPropagation(); stepProductImage(`feat-${product._id}`, product.images.length, -1); }}
                             className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 text-white px-2 py-1 rounded cursor-pointer text-lg leading-none"
                           >‹</button>
                           <button
-                            onClick={(e) => { e.stopPropagation(); stepProductImage(product._id, product.images.length, 1); }}
+                            onClick={(e) => { e.stopPropagation(); stepProductImage(`feat-${product._id}`, product.images.length, 1); }}
                             className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 text-white px-2 py-1 rounded cursor-pointer text-lg leading-none"
                           >›</button>
                           <span className="absolute bottom-1 right-2 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">
