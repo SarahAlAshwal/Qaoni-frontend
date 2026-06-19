@@ -11,6 +11,8 @@ import ShopDetailsPage from "./components/Pages/Shops/ShopDetailsPage";
 import ShopEditorPage from "./components/Pages/Shops/ShopsEditor";
 import AgreementGate from "./components/Pages/Shops/AgreementGate";
 import AdminPage from "./components/Pages/Admin/AdminPage";
+import CreateBusinessPage from "./components/Pages/Admin/CreateBusinessPage";
+import AdminBusinessesPage from "./components/Pages/Admin/AdminBusinessesPage";
 import AboutPage from "./components/Pages/AboutPage";
 import ContactPage from "./components/Pages/ContactPage";
 
@@ -41,8 +43,24 @@ function App() {
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute  requiredRole="admin">
+              <ProtectedRoute requiredRole="admin">
                 <AdminPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/create-business"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <CreateBusinessPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/businesses"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminBusinessesPage />
               </ProtectedRoute>
             }
           />

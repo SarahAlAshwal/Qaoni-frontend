@@ -345,19 +345,39 @@ export default function ShopEditorPage() {
       }
     };
 
+    const fetchShop = async (): Promise<any | null> => {
+      const res = await apiFetch("/api/shops/me", { method: "GET" }, getAccessTokenSilently);
+      if (res.ok) return res.json();
+
+      if (res.status === 404 && user?.email) {
+        // Try to auto-claim an admin-built shop assigned to this email
+        const claimRes = await apiFetch(
+          "/api/shops/claim",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: user.email }),
+          },
+          getAccessTokenSilently
+        );
+        if (claimRes.ok) {
+          // Claimed — now /me will return the shop
+          const reloadRes = await apiFetch("/api/shops/me", { method: "GET" }, getAccessTokenSilently);
+          if (reloadRes.ok) return reloadRes.json();
+        }
+      }
+
+      return null; // no shop found — show blank form
+    };
+
     const loadShop = async () => {
       try {
-        const res = await apiFetch("/api/shops/me", { method: "GET" }, getAccessTokenSilently);
+        const shop = await fetchShop();
 
-        if (!res.ok) {
-          if (res.status === 404) {
-            if (isMounted) { setIsEditing(true); setOriginalShop(null); }
-            return;
-          }
-          throw new Error("Failed to fetch shop");
+        if (!shop) {
+          if (isMounted) { setIsEditing(true); setOriginalShop(null); }
+          return;
         }
-
-        const shop = await res.json();
         if (!isMounted) return;
 
         setShopId(shop._id);
