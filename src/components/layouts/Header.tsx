@@ -29,9 +29,17 @@ const Header: FC = () => {
                 </Link>
               )}
               {isAdmin() && (
-                <Link to="/dashboard" className="hover:text-brand-secondary transition-colors">
-                  Dashboard
-                </Link>
+                <>
+                  <Link to="/dashboard" className="hover:text-brand-secondary transition-colors">
+                    Dashboard
+                  </Link>
+                  <Link to="/admin/businesses" className="hover:text-brand-secondary transition-colors">
+                    Businesses
+                  </Link>
+                  <Link to="/admin/create-business" className="hover:text-brand-secondary transition-colors">
+                    + Create
+                  </Link>
+                </>
               )}
             </>
           )}
@@ -99,9 +107,17 @@ const Header: FC = () => {
                   </Link>
                 )}
                 {isAdmin() && (
-                  <Link to="/dashboard" className="hover:text-brand-secondary transition-colors">
-                    Dashboard
-                  </Link>
+                  <>
+                    <Link to="/dashboard" className="hover:text-brand-secondary transition-colors" onClick={() => setIsOpen(false)}>
+                      Dashboard
+                    </Link>
+                    <Link to="/admin/businesses" className="hover:text-brand-secondary transition-colors" onClick={() => setIsOpen(false)}>
+                      Businesses
+                    </Link>
+                    <Link to="/admin/create-business" className="hover:text-brand-secondary transition-colors" onClick={() => setIsOpen(false)}>
+                      + Create Business
+                    </Link>
+                  </>
                 )}
               </>
             )}
