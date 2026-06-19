@@ -13,6 +13,7 @@ import AgreementGate from "./components/Pages/Shops/AgreementGate";
 import AdminPage from "./components/Pages/Admin/AdminPage";
 import CreateBusinessPage from "./components/Pages/Admin/CreateBusinessPage";
 import AdminBusinessesPage from "./components/Pages/Admin/AdminBusinessesPage";
+import AdminEditBusinessPage from "./components/Pages/Admin/AdminEditBusinessPage";
 import AboutPage from "./components/Pages/AboutPage";
 import ContactPage from "./components/Pages/ContactPage";
 
@@ -61,6 +62,14 @@ function App() {
             element={
               <ProtectedRoute requiredRole="admin">
                 <AdminBusinessesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/businesses/:id/edit"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminEditBusinessPage />
               </ProtectedRoute>
             }
           />

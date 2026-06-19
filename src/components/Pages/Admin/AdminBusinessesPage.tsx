@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { apiFetch } from "../../../services/api";
 import { useAuth } from "../../../hooks/useAuth";
 
@@ -22,6 +22,7 @@ export default function AdminBusinessesPage() {
   const [assignEmail, setAssignEmail] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const load = async () => {
     try {
@@ -126,6 +127,14 @@ export default function AdminBusinessesPage() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
+                    {!shop.ownerId && (
+                      <button
+                        onClick={() => navigate(`/admin/businesses/${shop._id}/edit`)}
+                        className="text-xs text-gray-500 hover:text-gray-800 cursor-pointer border rounded px-2 py-1 mr-2"
+                      >
+                        Edit
+                      </button>
+                    )}
                     {!shop.ownerId && (
                       assigningId === shop._id ? (
                         <div className="flex items-center gap-2 justify-end">
