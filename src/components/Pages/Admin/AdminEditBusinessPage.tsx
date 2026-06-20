@@ -50,6 +50,7 @@ export default function AdminEditBusinessPage() {
   const [heroPreview, setHeroPreview] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [heroFile, setHeroFile] = useState<File | null>(null);
+  const [isPublished, setIsPublished] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -94,6 +95,7 @@ export default function AdminEditBusinessPage() {
             tiktok: shop.contact?.tiktok || "",
           },
         });
+        setIsPublished(Boolean(shop.isPublished));
         const logoUrl = typeof shop.logo === "string" ? shop.logo : shop.logo?.url;
         const heroUrl = typeof shop.heroImage === "string" ? shop.heroImage : shop.heroImage?.url;
         if (logoUrl) setLogoPreview(logoUrl);
@@ -140,6 +142,21 @@ export default function AdminEditBusinessPage() {
       setToast(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleTogglePublish = async () => {
+    try {
+      const res = await apiFetch(
+        `/api/shops/${id}/publish`,
+        { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ isPublished: !isPublished }) },
+        getAccessTokenSilently
+      );
+      if (!res.ok) throw new Error("Failed to update publish status");
+      setIsPublished((p) => !p);
+      setToast(!isPublished ? "Business published." : "Business unpublished.");
+    } catch {
+      setToast("Failed to update publish status.");
     }
   };
 
@@ -386,6 +403,23 @@ export default function AdminEditBusinessPage() {
 
         {/* Right column */}
         <div className="space-y-6">
+
+          {/* Visibility */}
+          <div className="bg-white p-6 rounded-xl shadow-md space-y-3">
+            <h2 className="font-semibold">Visibility</h2>
+            <div className="flex items-center justify-between">
+              <span className={`text-sm font-medium px-2.5 py-1 rounded-full ${isPublished ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>
+                {isPublished ? "Published" : "Draft"}
+              </span>
+              <button
+                onClick={() => void handleTogglePublish()}
+                className={`text-sm px-3 py-1.5 rounded-lg cursor-pointer ${isPublished ? "bg-gray-200 text-gray-700 hover:bg-gray-300" : "bg-brand-primary text-white hover:bg-brand-secondary"}`}
+              >
+                {isPublished ? "Unpublish" : "Publish"}
+              </button>
+            </div>
+          </div>
+
           <div className="bg-white p-6 rounded-xl shadow-md space-y-4">
             <h2 className="font-semibold">Logo</h2>
             <ImageUploader label="Replace Logo" multiple={false} onUpload={(files) => { setLogoFile(files[0]); setLogoPreview(URL.createObjectURL(files[0])); }} />
