@@ -90,7 +90,7 @@ export default function AgreementGate({ children }: Props) {
 
           <section className="space-y-1">
             <h2 className="font-semibold text-gray-900">2. Content Responsibility</h2>
-            <p>You take full responsibility for all content you upload or publish through Qaoni, including images, descriptions, and any other materials. Content must not infringe on any third-party intellectual property rights, and must not be offensive, harmful, or illegal.</p>
+            <p>You take full responsibility for all content you upload or publish through Qaoni, including images, descriptions, and any other materials. You confirm that you own or have the legal right to use all images, logos, and other media you upload. Content must not infringe on any third-party intellectual property rights, and must not be offensive, harmful, or illegal.</p>
           </section>
 
           <section className="space-y-1">
