@@ -305,8 +305,19 @@ export default function ShopDetailsPage() {
                 <img
                   src={selectedProduct.images[modalImageIndex].url}
                   alt={selectedProduct.name}
-                  className="w-full max-h-[60vh] object-contain"
+                  className="w-full max-h-[60vh] object-contain cursor-zoom-in"
+                  onClick={() => window.open(selectedProduct.images[modalImageIndex].url, "_blank")}
                 />
+                <button
+                  onClick={() => window.open(selectedProduct.images[modalImageIndex].url, "_blank")}
+                  className="absolute bottom-2 left-2 bg-black/50 hover:bg-black/70 text-white rounded px-2 py-1 text-xs flex items-center gap-1 cursor-pointer"
+                  title="View full size"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4" />
+                  </svg>
+                  Full size
+                </button>
                 {selectedProduct.images.length > 1 && (
                   <>
                     <button

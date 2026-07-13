@@ -9,7 +9,7 @@ export default function ImagePreviewModal({ src, onClose }: ImagePreviewModalPro
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black bg-opacity-80 z-[60] flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
