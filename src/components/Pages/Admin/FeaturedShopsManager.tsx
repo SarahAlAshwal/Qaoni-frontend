@@ -277,6 +277,8 @@ export default function FeaturedShopsManager() {
           ? items.map((item, index) => ({ ...item, order: index + 1 }))
           : items;
 
+      const originalById = new Map(originalItems.map((o) => [o.id, o]));
+
       for (const item of itemsToSave) {
         if (item.isNew) {
           const body: Record<string, unknown> = {
@@ -320,6 +322,11 @@ export default function FeaturedShopsManager() {
 
           continue;
         }
+
+        const orig = originalById.get(item.id);
+        const activeChanged = !orig || item.isActive !== orig.isActive;
+        const orderChanged = featuredMode === "manual" && (!orig || item.order !== orig.order);
+        if (!activeChanged && !orderChanged) continue;
 
         const body: Record<string, unknown> = { isActive: item.isActive };
         if (featuredMode === "manual") body.order = item.order;
