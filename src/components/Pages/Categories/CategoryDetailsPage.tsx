@@ -14,6 +14,7 @@ interface CategoryDetails {
     description: string;
     image: string;
     categories: string[];
+    hasDelivery?: boolean;
   }>;
 }
 

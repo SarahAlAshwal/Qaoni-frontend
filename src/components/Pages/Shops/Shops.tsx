@@ -61,6 +61,7 @@ export default function ShopsPage() {
                         (value: unknown): value is string => typeof value === "string"
                       )
                     : [],
+                  hasDelivery: Boolean(shop.hasDelivery),
                 }))
             : []
         );

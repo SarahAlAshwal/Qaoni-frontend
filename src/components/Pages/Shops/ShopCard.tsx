@@ -8,12 +8,14 @@ export interface Shop {
   image: string;
   description: string;
   slug?: string;
-  categories: string[]; // multiple categories
+  categories: string[];
+  hasDelivery?: boolean;
 }
 
 export default function ShopCard({ shop }: { shop: Shop }) {
   const visibleCategories = shop.categories.slice(0, 3);
   const extraCategories = shop.categories.slice(3);
+  const shopUrl = `/businesses/${shop.slug || shop.name.toLowerCase().replace(/\s+/g, "-")}`;
 
   const [showTooltip, setShowTooltip] = useState(false);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
@@ -73,7 +75,14 @@ useEffect(() => {
   }, [showTooltip]);
 
   return (
-    <div className="relative group rounded-xl overflow-hidden shadow-md hover:shadow-xl transition">
+    <Link to={shopUrl} className="relative group rounded-xl overflow-hidden shadow-md hover:shadow-xl transition block">
+      {/* Delivery badge */}
+      {shop.hasDelivery && (
+        <div className="absolute top-3 left-3 z-10">
+          <span className="bg-brand-accent text-white px-3 py-1 rounded-full text-sm shadow-md">Deliver</span>
+        </div>
+      )}
+
       {/* Shop Image */}
       <img
         src={shop.image}
@@ -106,15 +115,14 @@ useEffect(() => {
             <div
               ref={tooltipRef}
               className="relative"
-              onMouseEnter={() => setShowTooltip(true)} // Desktop hover
-              onMouseLeave={() => setShowTooltip(false)} // Desktop hover
-              onClick={toggleTooltip} // Mobile tap
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+              onClick={(e) => { e.preventDefault(); toggleTooltip(); }}
             >
               <span className="bg-gray-600/80 text-white text-xs px-3 py-1 rounded-full shadow-md cursor-pointer select-none">
                 +{extraCategories.length} more
               </span>
 
-              {/* Tooltip */}
               {showTooltip && (
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[200px] bg-black/80 text-white text-xs rounded-lg px-3 py-2 shadow-lg whitespace-normal z-10">
                   {extraCategories.join(", ")}
@@ -124,14 +132,11 @@ useEffect(() => {
           )}
         </div>
 
-        {/* Hover CTA */}
-        <Link
-          to={`/businesses/${shop.slug || shop.name.toLowerCase().replace(/\s+/g, "-")}`}
-          className="mt-4 bg-white text-brand-primary font-medium text-sm px-4 py-2 rounded-lg shadow-md opacity-0 group-hover:opacity-100 text-brand-secondary transition duration-300"
-        >
+        {/* CTA — always visible on mobile, fades in on hover on desktop */}
+        <span className="mt-4 bg-white text-brand-secondary font-medium text-sm px-4 py-2 rounded-lg shadow-md opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition duration-300">
           Visit
-        </Link>
+        </span>
       </div>
-    </div>
+    </Link>
   );
 }

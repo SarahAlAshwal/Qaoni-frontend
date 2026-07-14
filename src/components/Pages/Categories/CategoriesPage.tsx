@@ -69,9 +69,9 @@ const CategoriesPage = () => {
     };
   }, []);
 
-  const filteredCategories = categories.filter(
-    (cat) => cat.shopCount > 0 && cat.name.toLowerCase().includes(query.toLowerCase())
-  );
+  const filteredCategories = categories
+    .filter((cat) => cat.shopCount > 0 && cat.name.toLowerCase().includes(query.toLowerCase()))
+    .sort((a, b) => b.shopCount - a.shopCount);
 
   return (
     <div className="max-w-6xl mx-auto p-6">
