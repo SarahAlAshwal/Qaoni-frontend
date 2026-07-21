@@ -1069,14 +1069,14 @@ export default function ShopEditorPage() {
       </div> {/* end grid */}
 
       {/* Action Buttons */}
-      <div className="flex justify-between">
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
         <button
           onClick={() => setShowPreviewPage(true)}
-          className="px-6 py-2 bg-black text-white rounded-lg cursor-pointer"
+          className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-black text-white rounded-lg cursor-pointer text-sm"
         >
           Preview
         </button>
-        <div className="flex gap-3">
+        <div className="flex flex-col-reverse gap-3 sm:flex-row">
           {shopId && (
             <button
               onClick={() => {
@@ -1089,7 +1089,7 @@ export default function ShopEditorPage() {
                 setIsEditing(false);
                 setToast("Changes discarded.");
               }}
-              className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-gray-200 text-gray-800 rounded-lg cursor-pointer text-sm"
             >
               Cancel
             </button>
@@ -1097,7 +1097,7 @@ export default function ShopEditorPage() {
           <button
             onClick={() => void handleSave()}
             disabled={isSaving}
-            className="px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-secondary disabled:opacity-60 cursor-pointer"
+            className="w-full sm:w-auto px-6 py-3 sm:py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-secondary disabled:opacity-60 cursor-pointer text-sm"
           >
             Save Changes
           </button>
