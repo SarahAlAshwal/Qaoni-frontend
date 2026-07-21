@@ -64,19 +64,13 @@ export default function Slideshow({
 
   if (isLoading) {
     return (
-      <div
-        className="w-full rounded-2xl bg-gray-200 animate-pulse shadow-lg"
-        style={{ maxHeight: "500px", minHeight: "300px", height: "45vh" }}
-      />
+      <div className="w-full rounded-2xl bg-gray-200 animate-pulse shadow-lg h-[30vh] sm:h-[45vh] min-h-[180px] sm:min-h-[300px] max-h-[500px]" />
     );
   }
 
   if (slides.length === 0) {
     return (
-      <div
-        className="flex w-full items-center justify-center rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 p-10 text-center text-gray-500 shadow-lg"
-        style={{ maxHeight: "500px", minHeight: "300px", height: "45vh" }}
-      >
+      <div className="flex w-full items-center justify-center rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 p-10 text-center text-gray-500 shadow-lg h-[30vh] sm:h-[45vh] min-h-[180px] sm:min-h-[300px] max-h-[500px]">
         No slideshow images available yet.
       </div>
     );
@@ -87,8 +81,7 @@ export default function Slideshow({
       {...handlers}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
-      className="relative w-full overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl shadow-lg"
-      style={{ maxHeight: '500px', minHeight: '300px', height: '45vh' }}
+      className="relative w-full overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl shadow-lg h-[30vh] sm:h-[45vh] min-h-[180px] sm:min-h-[300px] max-h-[500px]"
     >
       {slides.map((slide, i) => (
         <a
