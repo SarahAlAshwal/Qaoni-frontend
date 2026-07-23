@@ -12,20 +12,18 @@ interface FeaturedShopsProps {
 }
 
 export default function FeaturedShops({ shops }: FeaturedShopsProps) {
-  // Limits
-  const mobileLimit = 3;
   const tabletLimit = 6;
   const desktopLimit = 15;
 
   return (
-    <section className="py-12">
+    <section className="py-12 px-4 sm:px-6">
       <h2 className="text-2xl font-bold mb-8 text-center md:text-left">
         Featured Businesses
       </h2>
 
-      {/* Mobile (≤ sm) → 1 col, max 3 shops */}
-      <div className="grid grid-cols-1 gap-6 sm:hidden">
-        {shops.slice(0, mobileLimit).map((shop) => (
+      {/* Mobile (< sm) → 2 cols, all shops */}
+      <div className="grid grid-cols-2 gap-4 sm:hidden">
+        {shops.map((shop) => (
           <div
             key={`mobile-${shop.id}`}
             className="rounded-xl overflow-hidden shadow-md bg-gray-100 flex flex-col items-center p-4"
@@ -45,16 +43,6 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
           </div>
         ))}
       </div>
-      {shops.length > mobileLimit && (
-        <div className="sm:hidden flex justify-center mt-8">
-          <a
-            href="/businesses"
-            className="px-5 py-2 bg-brand-primary text-white rounded-lg font-medium hover:bg-brand-secondary transition"
-          >
-            View All Businesses
-          </a>
-        </div>
-      )}
 
       {/* Tablet (≥ sm and < md) → 2 cols, max 6 shops */}
       <div className="hidden sm:grid md:hidden grid-cols-2 gap-6">
