@@ -110,6 +110,7 @@ const HomePage: FC = () => {
     <main className="flex-grow">
       <title>Qaoni | Discover Local Businesses in Your Community</title>
       <meta name="description" content="Qaoni is the universe of small businesses — discover and support local shops, artisans, and service providers all in one place." />
+      <link rel="canonical" href="https://www.qaoni.ca/" />
       <div className="px-4 pt-4 sm:px-6 sm:pt-6">
         <Slideshow slides={slides} isLoading={isLoading} />
       </div>

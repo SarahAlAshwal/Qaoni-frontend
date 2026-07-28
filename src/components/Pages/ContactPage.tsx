@@ -43,6 +43,7 @@ export default function ContactPage() {
     <div className="flex flex-col">
       <title>Contact Us | Qaoni</title>
       <meta name="description" content="Get in touch with the Qaoni team. Have a question, suggestion, or want to list your business? We'd love to hear from you." />
+      <link rel="canonical" href="https://www.qaoni.ca/contact" />
 
       {/* Hero */}
       <section className="bg-brand-primary text-white py-20 px-6 text-center">

@@ -118,6 +118,7 @@ export default function ShopsPage() {
     <div className="container mx-auto px-6 py-8">
       <title>Browse Businesses | Qaoni</title>
       <meta name="description" content="Browse all local businesses on Qaoni. Find shops, artisans, and service providers in your community — search by name or filter by category." />
+      <link rel="canonical" href="https://www.qaoni.ca/businesses" />
       {/* Search + Filter */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <SearchBar onSearch={setSearchQuery} placeholder="Search businesses..." />

@@ -77,6 +77,7 @@ const CategoriesPage = () => {
     <div className="max-w-6xl mx-auto p-6">
       <title>Browse Categories | Qaoni</title>
       <meta name="description" content="Explore local businesses by category on Qaoni — from food and beauty to education, home services, and more." />
+      <link rel="canonical" href="https://www.qaoni.ca/categories" />
       {/* Controls */}
       <div className="flex flex-col md:flex-row items-center gap-4 mb-8">
         <SearchBar placeholder="Search categories..." onSearch={setQuery} />

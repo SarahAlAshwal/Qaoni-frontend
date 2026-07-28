@@ -127,6 +127,7 @@ export default function ShopDetailsPage() {
   if (!shop || errorMessage) {
     return (
       <div className="max-w-6xl mx-auto p-6 text-center">
+        <meta name="robots" content="noindex" />
         <p className="text-gray-500">{errorMessage || "Shop not found."}</p>
       </div>
     );
@@ -143,6 +144,7 @@ export default function ShopDetailsPage() {
     <div className="flex flex-col">
       <title>{shop.name} | Qaoni</title>
       <meta name="description" content={metaDescription} />
+      <link rel="canonical" href={`https://www.qaoni.ca/businesses/${shop.slug}`} />
       {heroUrl ? (
         <section className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden">
           <img src={heroUrl} alt={shop.name} className="w-full h-full object-cover" />

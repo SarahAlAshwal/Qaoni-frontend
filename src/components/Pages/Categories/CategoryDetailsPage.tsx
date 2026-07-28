@@ -87,6 +87,7 @@ export default function CategoryDetailsPage() {
     <div className="max-w-6xl mx-auto p-6">
       <title>{category.name} Businesses | Qaoni</title>
       <meta name="description" content={`Discover local ${category.name} businesses on Qaoni — browse shops and service providers in your community.`} />
+      <link rel="canonical" href={`https://www.qaoni.ca/categories/${slug}`} />
       {/* Category header */}
       <div className="flex flex-col items-center mb-10">
         <div className="w-36 h-36 rounded-full bg-brand-secondary flex items-center justify-center shadow-md">
