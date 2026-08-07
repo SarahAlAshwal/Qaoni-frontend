@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ShopCard from "../Shops/ShopCard";
 import { apiFetch } from "../../../services/api";
+import { sortShops, type ShopSortOption } from "../../../utils/sortShops";
 
 interface CategoryDetails {
   name: string;
@@ -21,6 +22,7 @@ interface CategoryDetails {
 export default function CategoryDetailsPage() {
   const { slug } = useParams();
   const [category, setCategory] = useState<CategoryDetails | null>(null);
+  const [sortBy, setSortBy] = useState<ShopSortOption>("discover");
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -100,13 +102,26 @@ export default function CategoryDetailsPage() {
         </p>
       </div>
 
-      {/* Shops under this category */}
+      {/* Sort + Shops */}
       {category.shops.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {category.shops.map((shop) => (
-            <ShopCard key={shop.id} shop={shop} />
-          ))}
-        </div>
+        <>
+          <div className="flex justify-end mb-4">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as ShopSortOption)}
+              className="text-sm border rounded-lg px-3 py-2 bg-white cursor-pointer"
+            >
+              <option value="discover">Discover</option>
+              <option value="az">A → Z</option>
+              <option value="za">Z → A</option>
+            </select>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {sortShops(category.shops, sortBy).map((shop) => (
+              <ShopCard key={shop.id} shop={shop} />
+            ))}
+          </div>
+        </>
       ) : (
         <p className="text-gray-500 text-center">
           No shops found in this category.

@@ -4,6 +4,7 @@ import Filter, { type FilterOption } from "../../Shared/Filter";
 import ShopCard from "../Shops/ShopCard";
 import { apiFetch } from "../../../services/api";
 import type { Shop } from "./ShopCard";
+import { sortShops, type ShopSortOption } from "../../../utils/sortShops";
 
 interface CategorySummary {
   name: string;
@@ -13,6 +14,7 @@ interface CategorySummary {
 export default function ShopsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<string>("");
+  const [sortBy, setSortBy] = useState<ShopSortOption>("discover");
   const [shops, setShops] = useState<Shop[]>([]);
   const [categories, setCategories] = useState<FilterOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -114,22 +116,34 @@ export default function ShopsPage() {
     return matchesSearch && matchesCategories;
   });
 
+  const sortedShops = sortShops(filteredShops, sortBy);
+
   return (
     <div className="container mx-auto px-6 py-8">
       <title>Browse Businesses | Qaoni</title>
       <meta name="description" content="Browse all local businesses on Qaoni. Find shops, artisans, and service providers in your community — search by name or filter by category." />
       <link rel="canonical" href="https://www.qaoni.ca/businesses" />
-      {/* Search + Filter */}
+      {/* Search + Filter + Sort */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <SearchBar onSearch={setSearchQuery} placeholder="Search businesses..." />
-        <Filter
-          categories={categories}
-          onFilterChange={(f) => {
-            // Extract the filter value from the object
-            const filterValue = f.category || "";
-            setFilters(filterValue);
-          }}
-        />
+        <div className="flex flex-wrap items-center gap-3">
+          <Filter
+            categories={categories}
+            onFilterChange={(f) => {
+              const filterValue = f.category || "";
+              setFilters(filterValue);
+            }}
+          />
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as ShopSortOption)}
+            className="text-sm border rounded-lg px-3 py-2 bg-white cursor-pointer"
+          >
+            <option value="discover">Discover</option>
+            <option value="az">A → Z</option>
+            <option value="za">Z → A</option>
+          </select>
+        </div>
       </div>
 
       {/* Results */}
@@ -137,9 +151,9 @@ export default function ShopsPage() {
         <p className="text-gray-500 mt-6">Loading shops...</p>
       ) : errorMessage ? (
         <p className="text-red-600 mt-6">{errorMessage}</p>
-      ) : filteredShops.length > 0 ? (
+      ) : sortedShops.length > 0 ? (
         <div className="grid gap-6 lg:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredShops.map((shop) => (
+          {sortedShops.map((shop) => (
             <ShopCard key={shop.id} shop={shop} />
           ))}
         </div>
