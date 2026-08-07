@@ -12,16 +12,13 @@ interface FeaturedShopsProps {
 }
 
 export default function FeaturedShops({ shops }: FeaturedShopsProps) {
-  const tabletLimit = 6;
-  const desktopLimit = 15;
-
   return (
     <section className="py-12 px-4 sm:px-6">
       <h2 className="text-2xl font-bold mb-8 text-center md:text-left">
         Featured Businesses
       </h2>
 
-      {/* Mobile (< sm) → 2 cols, all shops */}
+      {/* Mobile (< sm) → 2 cols */}
       <div className="grid grid-cols-2 gap-4 sm:hidden">
         {shops.map((shop) => (
           <div
@@ -44,9 +41,9 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
         ))}
       </div>
 
-      {/* Tablet (≥ sm and < md) → 2 cols, max 6 shops */}
+      {/* Tablet (≥ sm and < md) → 2 cols */}
       <div className="hidden sm:grid md:hidden grid-cols-2 gap-6">
-        {shops.slice(0, tabletLimit).map((shop) => (
+        {shops.map((shop) => (
           <div
             key={`tablet-${shop.id}`}
             className="rounded-xl overflow-hidden shadow-md bg-gray-100 flex flex-col items-center p-4"
@@ -66,20 +63,10 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
           </div>
         ))}
       </div>
-      {shops.length > tabletLimit && (
-        <div className="hidden sm:flex md:hidden justify-center mt-8">
-          <a
-            href="/businesses"
-            className="px-5 py-2 bg-brand-primary text-white rounded-lg font-medium hover:bg-brand-secondary transition"
-          >
-            View All Businesses
-          </a>
-        </div>
-      )}
 
-      {/* Desktop (≥ md) → 5 cols, max 15 shops */}
+      {/* Desktop (≥ md) → up to 5 cols */}
       <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-        {shops.slice(0, desktopLimit).map((shop) => (
+        {shops.map((shop) => (
           <div
             key={`desktop-${shop.id}`}
             className="relative group rounded-xl overflow-hidden shadow-md"
@@ -89,11 +76,10 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
               alt={`${shop.name} logo`}
               className="w-full h-40 lg:h-48 object-contain bg-gray-100"
             />
-            {/* Hover Overlay */}
             <a
               href={shop.link}
-              className="absolute inset-0 flex flex-col items-center justify-center 
-                         bg-brand-primary/70 opacity-0 group-hover:opacity-100 
+              className="absolute inset-0 flex flex-col items-center justify-center
+                         bg-brand-primary/70 opacity-0 group-hover:opacity-100
                          transition-opacity duration-300 text-white"
             >
               <p className={`${shopNameSize(shop.name)} font-semibold mb-2`}>{shop.name}</p>
@@ -104,16 +90,6 @@ export default function FeaturedShops({ shops }: FeaturedShopsProps) {
           </div>
         ))}
       </div>
-      {shops.length > desktopLimit && (
-        <div className="hidden md:flex justify-center mt-8">
-          <a
-            href="/businesses"
-            className="px-5 py-2 bg-brand-primary text-white rounded-lg font-medium hover:bg-brand-secondary transition"
-          >
-            View All Businesses
-          </a>
-        </div>
-      )}
     </section>
   );
 }
