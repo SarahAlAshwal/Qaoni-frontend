@@ -1,26 +1,30 @@
 import { useEffect, useRef, useState, type FC } from "react";
 import Slideshow, { type Slide } from "../Shared/Slideshow";
 import FeaturedShops, { type Shop } from "../layouts/FeaturedShops";
+import FeaturedCategories, { type CategoryTeaser } from "../layouts/FeaturedCategories";
 import { apiFetch } from "../../services/api";
 
-const CACHE_KEY = "qaoni_homepage_v1";
+const CACHE_KEY = "qaoni_homepage_v2";
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-function readCache(): { slides: Slide[]; featuredShops: Shop[] } | null {
+function readCache(): { slides: Slide[]; featuredShops: Shop[]; categories: CategoryTeaser[] } | null {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
-    const { slides, featuredShops, timestamp } = JSON.parse(raw);
+    const { slides, featuredShops, categories, timestamp } = JSON.parse(raw);
     if (Date.now() - timestamp > CACHE_TTL) return null;
-    return { slides, featuredShops };
+    return { slides, featuredShops, categories };
   } catch {
     return null;
   }
 }
 
-function writeCache(slides: Slide[], featuredShops: Shop[]) {
+function writeCache(slides: Slide[], featuredShops: Shop[], categories: CategoryTeaser[]) {
   try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ slides, featuredShops, timestamp: Date.now() }));
+    localStorage.setItem(
+      CACHE_KEY,
+      JSON.stringify({ slides, featuredShops, categories, timestamp: Date.now() })
+    );
   } catch {}
 }
 
@@ -41,6 +45,7 @@ const HomePage: FC = () => {
   const cache = useRef(readCache());
   const [slides, setSlides] = useState<Slide[]>(cache.current?.slides ?? []);
   const [featuredShops, setFeaturedShops] = useState<Shop[]>(cache.current?.featuredShops ?? []);
+  const [categories, setCategories] = useState<CategoryTeaser[]>(cache.current?.categories ?? []);
   const [isLoading, setIsLoading] = useState(cache.current === null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -49,16 +54,19 @@ const HomePage: FC = () => {
 
     const loadHomepage = async () => {
       try {
-        const [slidesRes, featuredRes] = await Promise.all([
+        const [slidesRes, featuredRes, categoriesRes] = await Promise.all([
           apiFetch("/api/homepage-slides"),
           apiFetch("/api/featured-shops"),
+          apiFetch("/api/categories"),
         ]);
 
         if (!slidesRes.ok) throw new Error("Failed to load homepage slides");
         if (!featuredRes.ok) throw new Error("Failed to load featured shops");
+        if (!categoriesRes.ok) throw new Error("Failed to load categories");
 
         const slidesData = await slidesRes.json();
         const featuredData = await featuredRes.json();
+        const categoriesData = await categoriesRes.json();
 
         if (!isMounted) return;
 
@@ -89,9 +97,27 @@ const HomePage: FC = () => {
               }))
           : [];
 
+        const newCategories: CategoryTeaser[] = Array.isArray(categoriesData)
+          ? categoriesData
+              .filter(
+                (category: any) =>
+                  typeof category?.name === "string" &&
+                  typeof category?.slug === "string" &&
+                  typeof category?.shopCount === "number" &&
+                  category.shopCount > 0
+              )
+              .map((category: any) => ({
+                name: category.name,
+                slug: category.slug,
+                shopCount: category.shopCount,
+              }))
+              .sort((a: CategoryTeaser, b: CategoryTeaser) => b.shopCount - a.shopCount)
+          : [];
+
         setSlides(newSlides);
         setFeaturedShops(newFeaturedShops);
-        writeCache(newSlides, newFeaturedShops);
+        setCategories(newCategories);
+        writeCache(newSlides, newFeaturedShops, newCategories);
       } catch (error) {
         console.error(error);
         if (isMounted && cache.current === null) {
@@ -120,12 +146,17 @@ const HomePage: FC = () => {
         </div>
       ) : errorMessage ? (
         <section className="py-4 text-center text-sm text-red-600">{errorMessage}</section>
-      ) : featuredShops.length > 0 ? (
-        <FeaturedShops shops={featuredShops} />
       ) : (
-        <section className="py-12 text-center text-gray-500">
-          No featured shops are available yet.
-        </section>
+        <>
+          <FeaturedCategories categories={categories} />
+          {featuredShops.length > 0 ? (
+            <FeaturedShops shops={featuredShops} />
+          ) : (
+            <section className="py-12 text-center text-gray-500">
+              No featured shops are available yet.
+            </section>
+          )}
+        </>
       )}
     </main>
   );
