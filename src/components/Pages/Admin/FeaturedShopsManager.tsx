@@ -375,11 +375,13 @@ export default function FeaturedShopsManager() {
             className="rounded-lg border px-3 py-2 text-sm"
           >
             <option value="">Select a shop</option>
-            {shops.map((shop) => (
-              <option key={shop.id} value={shop.id} disabled={!shop.eligible}>
-                {shop.name}{shop.eligible ? "" : " - Setup incomplete"}
-              </option>
-            ))}
+            {shops
+              .filter((shop) => !items.some((item) => item.shopId === shop.id))
+              .map((shop) => (
+                <option key={shop.id} value={shop.id} disabled={!shop.eligible}>
+                  {shop.name}{shop.eligible ? "" : " - Setup incomplete"}
+                </option>
+              ))}
           </select>
 
           <button
